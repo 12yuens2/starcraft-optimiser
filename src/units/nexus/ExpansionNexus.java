@@ -15,25 +15,24 @@ public class ExpansionNexus extends Nexus {
 	
 	public ExpansionNexus(Game game){
 		super(game);
-		mineralPatches.add(new MineralPatch());
-		mineralPatches.add(new MineralPatch());
-		mineralPatches.add(new MineralPatch());
-		mineralPatches.add(new MineralPatch());
-		mineralPatches.add(new MineralPatch());
-		mineralPatches.add(new MineralPatch());
-		mineralPatches.add(new MineralPatch());
-		mineralPatches.add(new MineralPatch());
-		vespeneGeysers.add(new VespeneGeyser());
-		vespeneGeysers.add(new VespeneGeyser());
+		mineralPatches.add(new MineralPatch(game));
+		mineralPatches.add(new MineralPatch(game));
+		mineralPatches.add(new MineralPatch(game));
+		mineralPatches.add(new MineralPatch(game));
+		mineralPatches.add(new MineralPatch(game));
+		mineralPatches.add(new MineralPatch(game));
+		mineralPatches.add(new MineralPatch(game));
+		mineralPatches.add(new MineralPatch(game));
+		vespeneGeysers.add(new VespeneGeyser(game));
+		vespeneGeysers.add(new VespeneGeyser(game));
 	}
 	
 	@Override
 	public void passTime() {
 		for (MineralPatch patch : mineralPatches){
-			if (patch.getMinerals() == 0){
-				SCLogger.log("Deleting Mineral patch",SCLogger.LOG_DEBUG);
+			patch.passTime();
+			if (patch.getMinerals() < 0){
 				patch.releaseProbes();
-				mineralPatches.remove(patch);
 			}
 		}
 	}

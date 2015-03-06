@@ -19,12 +19,13 @@ public class Probe extends Bulider{
 	private boolean isBuilding;
 	
 	public void assignToPatch(MineralPatch patch){
-		this.miningPatch = patch;
-		patch.addProbe(this);
+		if (patch.getMinerals() > 0){
+			this.miningPatch = patch;
+			patch.addProbe(this);			
+		}
 	}
 	
 	public void removeFromPatch(){
-		miningPatch.removeProbe(this);
 		this.miningPatch = null;
 	}
 	
@@ -35,8 +36,6 @@ public class Probe extends Bulider{
 	public void mine(){
 		if (miningPatch != null){
 			SCLogger.log("Probe Mining", SCLogger.LOG_CALLS);
-			miningPatch.deplete();
-			getGame().addMinerals(MineralPatch.DEPLETION_RATE);
 		} else if (miningGeyser != null){
 			SCLogger.log("Probe Mining Gas", SCLogger.LOG_CALLS);			
 		}
@@ -47,7 +46,7 @@ public class Probe extends Bulider{
 		if (!isMining() && !isBuilding){
 			for (ExpansionNexus nexus : getGame().getBases()){
 				for (MineralPatch patch : nexus.getMinerals()){
-					if (patch.getProbes().isEmpty()){
+					if ( patch.getMinerals() > 0){
 						assignToPatch(patch);
 						return;
 					}
