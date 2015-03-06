@@ -12,8 +12,10 @@ public class Probe extends Bulider{
 		super(game);
 	}
 
-	private int mineralCost = 50;
-	private int gasCost = 50;
+	public int mineralCost = 50;
+	public int gasCost = 0;
+	public int buildTime = 17;
+	public int supplyCost = 0;
 	private MineralPatch miningPatch = null;
 	private VespeneGeyser miningGeyser = null;
 	private boolean isBuilding;
@@ -59,6 +61,16 @@ public class Probe extends Bulider{
 				//
 			}
 		}
+
+		
+		this.buildQueue.forEach( (entity,buildTime) -> {
+			if (buildTime == entity.buildTime){
+				this.game.addGameObejct(entity);
+				//this.buildQueue.remove(entity);
+			} else {
+				//buildTime++;
+			}
+		});
 	}
 
 }

@@ -24,17 +24,21 @@ public class MineralPatch extends Bulider implements GameObject {
 	
 	@Override
 	public void passTime() {
-	//	if (this.remainingMinerals > 0){
+		if (this.remainingMinerals > 0){
 			double deltaMinerals = MineralPatch.DEPLETION_RATE*this.probes.size(); //, this.remainingMinerals);
 			if (deltaMinerals > this.remainingMinerals){
 				deltaMinerals = this.remainingMinerals;
 			}
 			getGame().addMinerals(deltaMinerals); // change for 3 probes and stuff
 			this.remainingMinerals -= deltaMinerals;
-			SCLogger.log("Remaining Minerals :" + this.remainingMinerals, SCLogger.LOG_PARAMS);					
-	//	}
+			SCLogger.log("Remaining Minerals :" + this.remainingMinerals, SCLogger.LOG_PARAMS);	
+			
+		}
+	
+			if (this.getMinerals() == 0){
+				this.releaseProbes();
+			}
 	}
-
 
 
 	public void addProbe(Probe probe) {

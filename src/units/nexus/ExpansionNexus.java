@@ -31,9 +31,7 @@ public class ExpansionNexus extends Nexus {
 	public void passTime() {
 		for (MineralPatch patch : mineralPatches){
 			patch.passTime();
-			if (patch.getMinerals() < 0){
-				patch.releaseProbes();
-			}
+
 		}
 	}
 
