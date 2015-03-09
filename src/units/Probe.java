@@ -16,30 +16,31 @@ public class Probe extends Bulider{
 	public int gasCost = 0;
 	public int buildTime = 17;
 	public int supplyCost = 0;
-	private MineralPatch miningPatch = null;
-	private VespeneGeyser miningGeyser = null;
+	private ExpansionNexus mineralNexus = null;
+	private ExpansionNexus gasNexus = null;
 	private boolean isBuilding;
 	
-	public void assignToPatch(MineralPatch patch){
-		if (patch.getMinerals() > 0){
-			this.miningPatch = patch;
-			patch.addProbe(this);			
+	public void assignToMinerals(ExpansionNexus nexus){
+		if (nexus.getMinerals() > 0){
+			this.mineralNexus = nexus;
+			nexus.addMineralProbe(this);
 		}
 	}
 	
-	public void removeFromPatch(){
-		this.miningPatch = null;
+	public void removeFromNexus(){
+		this.mineralNexus = null;
+		this.gasNexus = null;
 	}
 	
 	public boolean isMining(){
-		return (miningPatch != null || miningGeyser != null);
+		return (mineralNexus != null || gasNexus != null);
 	}
 	
 	public void mine(){
-		if (miningPatch != null){
-			SCLogger.log("Probe Mining", SCLogger.LOG_CALLS);
-		} else if (miningGeyser != null){
-			SCLogger.log("Probe Mining Gas", SCLogger.LOG_CALLS);			
+		if (mineralNexus != null){
+			//SCLogger.log("Probe Mining", SCLogger.LOG_CALLS);
+		} else if (gasNexus != null){
+			//SCLogger.log("Probe Mining Gas", SCLogger.LOG_CALLS);			
 		}
 	}
 	
@@ -47,18 +48,16 @@ public class Probe extends Bulider{
 	public void passTime() {
 		if (!isMining() && !isBuilding){
 			for (ExpansionNexus nexus : getGame().getBases()){
-				for (MineralPatch patch : nexus.getMinerals()){
-					if ( patch.getMinerals() > 0){
-						assignToPatch(patch);
-						return;
-					}
+				if (nexus.getMinerals() > 0){
+					nexus.addMineralProbe(this);
+					break;
 				}
 			}
 		} else {
 			if (isMining()){
-				mine();
+				//?
 			} else if (isBuilding){
-				//
+				//?
 			}
 		}
 

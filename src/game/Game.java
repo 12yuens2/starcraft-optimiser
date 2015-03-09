@@ -4,28 +4,35 @@ import gameobjects.Entity;
 import gameobjects.GameObject;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+
+import com.oracle.xmlns.internal.webservices.jaxws_databinding.ExistingAnnotationsType;
 
 import logger.SCLogger;
-import units.MineralPatch;
 import units.Probe;
 import units.nexus.ExpansionNexus;
 import units.nexus.Nexus;
 
 public class Game {
 	
-	private int minerals = 0;
-	private int gas = 0;
+	private double minerals = 0;
+	private double gas = 0;
 	private int supply = 0;
 	private int maxSupply = 0;
 	private int time = 0;
 	public static final int SUPPLY_LIMIT = 200;
 	
+	private HashMap<Class,Integer> goal = new HashMap<>();
+	
+	
 	ArrayList<GameObject> gameObjects  = new ArrayList<>();
 	ArrayList<GameObject> tempGameObjects = new ArrayList<>();
 	ArrayList<ExpansionNexus> bases = new ArrayList<>();
 	
-	public Game(){
-
+	public Game(HashMap goal){
+		
+		this.goal = goal;
+		
 		//Initial buildings
 		gameObjects.add(new ExpansionNexus(this));
 		gameObjects.add(new Probe(this));
@@ -42,7 +49,7 @@ public class Game {
 		for (GameObject go : gameObjects){
 			go.passTime();
 			if( go instanceof Probe){
-				((Probe)go).build(new Probe(this));
+				//((Probe)go).build(new Probe(this));
 			}		
 		}
 		for (GameObject tempObject : tempGameObjects){
@@ -50,7 +57,18 @@ public class Game {
 		//	SCLogger.log("Adding new " + tempObject + " to game.",SCLogger.LOG_PARAMS);
 		}
 		tempGameObjects.clear();
-		printResources();
+	//	printResources();
+		
+		//if everything is done, ripperini.
+		boolean goalMet = true;
+		for (Integer i : goal.values()){
+			if (i != 0) { goalMet = false; }
+		}
+		if (goalMet){
+			System.out.println("Rip in pizzerinis.");
+			System.exit(0);
+		}
+		
 		time++;
 	}
 
@@ -84,11 +102,11 @@ public class Game {
 		this.tempGameObjects.add(entity);
 	}
 
-	public int getMinerals() {
+	public double getMinerals() {
 		return minerals;
 	}
 
-	public int getGas() {
+	public double getGas() {
 		return gas;
 	}
 
@@ -108,4 +126,12 @@ public class Game {
 		this.supply += supply;
 	}
 	
+	public void checkNewUnit(Class unitClass){
+		if (goal.containsKey(unitClass)){
+			Integer unitCount = goal.get(unitClass);
+			if (unitCount > 0){
+				goal.replace(unitClass, unitCount- 1);				
+			}
+		}
+	}
 }
