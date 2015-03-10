@@ -7,15 +7,15 @@ import gameobjects.Bulider;
 import gameobjects.Entity;
 
 public class Probe extends Bulider{
-
+	
 	public Probe(Game game) {
 		super(game);
+		mineralCost = 50;
+		gasCost = 0;
+		buildTime = 17;
+		supplyCost = 0;
 	}
-
-	public int mineralCost = 50;
-	public int gasCost = 0;
-	public int buildTime = 17;
-	public int supplyCost = 0;
+	
 	private ExpansionNexus mineralNexus = null;
 	private ExpansionNexus gasNexus = null;
 	private boolean isBuilding;
@@ -61,15 +61,14 @@ public class Probe extends Bulider{
 			}
 		}
 
-		
-		this.buildQueue.forEach( (entity,buildTime) -> {
-			if (buildTime == entity.buildTime){
-				this.game.addGameObejct(entity);
-				//this.buildQueue.remove(entity);
+		for (int i = 0; i < buildQueue.size(); i++){
+			if (buildQueue.get(i).isFinished()){
+				this.game.addGameObejct(buildQueue.remove(i).getUnit());
 			} else {
-				//buildTime++;
-			}
-		});
+				buildQueue.get(i).increment();			
+			}			
+		}
+		
 	}
 
 }

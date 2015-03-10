@@ -1,5 +1,6 @@
-package entities.buildings;
+package units;
 
+import entities.buildings.Building;
 import game.Game;
 
 public class Gateway extends Building{

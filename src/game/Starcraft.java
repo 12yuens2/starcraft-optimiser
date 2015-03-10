@@ -9,13 +9,14 @@ import units.Probe;
 import units.nexus.ExpansionNexus;
 
 public class Starcraft {
-public static void main(String[] args) {
+	public static void main(String[] args) {
+
 		HashMap<Class,Integer> goal = new HashMap<>();
-		goal.put(Probe.class, 0);
-	
+		goal.put(Probe.class, 4);
+
 		Game testGame = new Game(goal);
-		
-		while (testGame.getTime() < 10000000){
+
+		while (!testGame.achievedGoal() && testGame.getTime() < 1000000){
 			testGame.passTime();
 		}
 	}

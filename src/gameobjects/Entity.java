@@ -7,4 +7,8 @@ public abstract class Entity implements GameObject {
 	public int supplyCost;
 	public int buildTime;
 	
+	public void printResources(){
+		System.out.println(this.mineralCost + " " + this.gasCost + " " + this.supplyCost);
+	}
+	
 }

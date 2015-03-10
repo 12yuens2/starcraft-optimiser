@@ -48,6 +48,10 @@ public class ExpansionNexus extends Nexus {
 			this.getGame().addMinerals(deltaMinerals);
 		}
 		
+		if (game.goalInvolves(Probe.class)){
+			this.build(new Probe(game));
+		}
+		super.passTime();
 	}
 
 	public void addMineralProbe(Probe probe){

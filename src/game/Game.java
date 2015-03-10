@@ -15,7 +15,7 @@ import units.nexus.Nexus;
 
 public class Game {
 	
-	private double minerals = 0;
+	private double minerals = 50;
 	private double gas = 0;
 	private int supply = 0;
 	private int maxSupply = 0;
@@ -45,7 +45,7 @@ public class Game {
 	
 	public void passTime(){
 		setBases();
-	
+			
 		for (GameObject go : gameObjects){
 			go.passTime();
 			if( go instanceof Probe){
@@ -54,25 +54,15 @@ public class Game {
 		}
 		for (GameObject tempObject : tempGameObjects){
 			gameObjects.add(tempObject);
-		//	SCLogger.log("Adding new " + tempObject + " to game.",SCLogger.LOG_PARAMS);
 		}
 		tempGameObjects.clear();
 	//	printResources();
 		
-		//if everything is done, ripperini.
-		boolean goalMet = true;
-		for (Integer i : goal.values()){
-			if (i != 0) { goalMet = false; }
-		}
-		if (goalMet){
-			System.out.println("Rip in pizzerinis.");
-			System.exit(0);
-		}
-		
+		//if everything is done, ripperini.	
 		time++;
 	}
 
-	private void printResources() {
+	public void printResources() {
 		System.out.println(this.minerals + " " + this.gas + " " + this.supply + "/" + this.maxSupply);
 	}
 
@@ -95,13 +85,19 @@ public class Game {
 
 	public void addMinerals(double minerals) {
 		this.minerals += minerals;
-		SCLogger.log("New mineral count: " + this.minerals, SCLogger.LOG_PARAMS);
+	//	SCLogger.log("New mineral count: " + this.minerals, SCLogger.LOG_PARAMS);
 	}
 
 	public void addGameObejct(Entity entity) {
 		this.tempGameObjects.add(entity);
+		this.checkNewUnit(entity.getClass());
 	}
 
+	public String getTimestamp(){
+
+		return ""+ (time/60 >10 ? time/60 : "0" + time/60 ) + ":" + (time%60 > 10 ? time%60 : "0" + time%60) ;
+	}
+	
 	public double getMinerals() {
 		return minerals;
 	}
@@ -133,5 +129,17 @@ public class Game {
 				goal.replace(unitClass, unitCount- 1);				
 			}
 		}
+	}
+
+	public boolean achievedGoal() {
+		boolean goalMet = true;
+		for (Integer i : goal.values()){
+			if (i != 0) { goalMet = false; }
+		}
+		return goalMet;
+	}
+	
+	public boolean goalInvolves(Class unitType){
+		return goal.containsKey(unitType);
 	}
 }

@@ -10,6 +10,10 @@ public abstract class Entity {
 	protected int supplyCost;
 	
 	public Entity(Game game){
-		game.checkNewUnit(this.getClass());
+		
+	}
+	
+	public void printResources(){
+		System.out.println(this.mineralCost + " " + this.gasCost + " " + this.supplyCost);
 	}
 }
