@@ -1,6 +1,5 @@
 package units.gateway;
 
-import entities.unit.Unit;
 import game.Game;
 import gameobjects.*;;
 

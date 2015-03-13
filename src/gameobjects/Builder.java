@@ -5,7 +5,6 @@ import java.util.HashMap;
 import java.util.LinkedList;
 
 import logger.SCLogger;
-import entities.buildings.Building;
 import game.Game;
 
 public abstract class Builder extends Entity {

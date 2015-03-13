@@ -1,7 +1,6 @@
 package units.buildings;
 
 import units.gateway.Zealot;
-import entities.buildings.Building;
 import game.Game;
 import gameobjects.Builder;
 
