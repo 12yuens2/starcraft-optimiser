@@ -8,11 +8,11 @@ import logger.SCLogger;
 import entities.buildings.Building;
 import game.Game;
 
-public abstract class Bulider extends Entity {
+public abstract class Builder extends Entity {
 	protected Game game;
 	protected LinkedList<BuildOrder> buildQueue;
 	
-	public Bulider(Game game) {
+	public Builder(Game game) {
 		this.game = game;
 		buildQueue = new LinkedList<BuildOrder>();
 	}
@@ -41,5 +41,9 @@ public abstract class Bulider extends Entity {
 		} else {
 
 		}
+	}
+
+	public LinkedList<BuildOrder> getQueue() {
+		return buildQueue;
 	}
 }

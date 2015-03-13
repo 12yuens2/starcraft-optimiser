@@ -11,4 +11,10 @@ public abstract class Entity implements GameObject {
 		System.out.println(this.mineralCost + " " + this.gasCost + " " + this.supplyCost);
 	}
 	
+	public void setResources(int mineralCost, int gasCost, int supplyCost, int buildTime){
+		this.mineralCost = mineralCost;
+		this.gasCost = gasCost;
+		this.supplyCost = supplyCost;
+		this.buildTime = buildTime;
+	}
 }

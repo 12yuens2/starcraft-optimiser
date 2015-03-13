@@ -1,17 +1,20 @@
 package game;
 
+import gameobjects.BuildOrder;
 import gameobjects.Entity;
 import gameobjects.GameObject;
+import gameobjects.Builder;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedList;
 
 import com.oracle.xmlns.internal.webservices.jaxws_databinding.ExistingAnnotationsType;
 
 import logger.SCLogger;
-import units.Probe;
-import units.nexus.ExpansionNexus;
-import units.nexus.Nexus;
+import units.buildings.ExpansionNexus;
+import units.buildings.Nexus;
+import units.nexus.Probe;
 
 public class Game {
 	
@@ -28,6 +31,7 @@ public class Game {
 	ArrayList<GameObject> gameObjects  = new ArrayList<>();
 	ArrayList<GameObject> tempGameObjects = new ArrayList<>();
 	ArrayList<ExpansionNexus> bases = new ArrayList<>();
+	ArrayList<LinkedList<BuildOrder>> buildQueues = new ArrayList<>();
 	
 	public Game(HashMap goal){
 		
@@ -45,7 +49,9 @@ public class Game {
 	
 	public void passTime(){
 		setBases();
-			
+		
+		setBuildQueue();
+		
 		for (GameObject go : gameObjects){
 			go.passTime();
 			if( go instanceof Probe){
@@ -54,14 +60,28 @@ public class Game {
 		}
 		for (GameObject tempObject : tempGameObjects){
 			gameObjects.add(tempObject);
+			System.out.println(this.getTimestamp() + " Made new unit " + tempObject);
 		}
 		tempGameObjects.clear();
-	//	printResources();
+		//printResources();
 		
 		//if everything is done, ripperini.	
 		time++;
 	}
 
+	private void setBuildQueue() {
+		buildQueues.clear();
+		for (GameObject go: gameObjects){
+			if (go instanceof Builder){
+				buildQueues.add(((Builder)go).getQueue());
+			}
+		}
+	}
+
+	public ArrayList<LinkedList<BuildOrder>> getBuildQueue(){
+		return buildQueues;
+	}
+	
 	public void printResources() {
 		System.out.println(this.minerals + " " + this.gas + " " + this.supply + "/" + this.maxSupply);
 	}
@@ -95,7 +115,7 @@ public class Game {
 
 	public String getTimestamp(){
 
-		return ""+ (time/60 >10 ? time/60 : "0" + time/60 ) + ":" + (time%60 > 10 ? time%60 : "0" + time%60) ;
+		return ""+ (time/60 >=10 ? time/60 : "0" + time/60 ) + ":" + (time%60 >= 10 ? time%60 : "0" + time%60) ;
 	}
 	
 	public double getMinerals() {
@@ -141,5 +161,21 @@ public class Game {
 	
 	public boolean goalInvolves(Class unitType){
 		return goal.containsKey(unitType);
+	}
+
+	public boolean needsMore(Class unitType) {
+		int unitsLeft = goal.get(unitType);
+		boolean needsMore = false;
+		for (LinkedList<BuildOrder> unitQueue : buildQueues){
+			for (BuildOrder order : unitQueue){
+				if (order.getUnit().getClass().equals(unitType)){
+					unitsLeft--;
+				}
+			}
+		}
+		if (unitsLeft > 0){
+			needsMore = true;
+		}
+		return needsMore;
 	}
 }

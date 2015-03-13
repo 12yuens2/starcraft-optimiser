@@ -1,19 +1,18 @@
-package units;
+package units.nexus;
 
-import units.nexus.ExpansionNexus;
+import units.buildings.ExpansionNexus;
+import units.buildings.Gateway;
+import units.gateway.Zealot;
 import logger.SCLogger;
 import game.Game;
-import gameobjects.Bulider;
+import gameobjects.Builder;
 import gameobjects.Entity;
 
-public class Probe extends Bulider{
+public class Probe extends Builder{
 	
 	public Probe(Game game) {
 		super(game);
-		mineralCost = 50;
-		gasCost = 0;
-		buildTime = 17;
-		supplyCost = 0;
+		setResources(50, 0, 0, 17);
 	}
 	
 	private ExpansionNexus mineralNexus = null;
@@ -61,6 +60,12 @@ public class Probe extends Bulider{
 			}
 		}
 
+		//Move this to another place when things are good and stuff ._.
+		if ( game.needsMore(Zealot.class)){
+			this.build(new Gateway(game));
+		}
+		
+		
 		for (int i = 0; i < buildQueue.size(); i++){
 			if (buildQueue.get(i).isFinished()){
 				this.game.addGameObejct(buildQueue.remove(i).getUnit());

@@ -1,11 +1,11 @@
-package units.nexus;
+package units.buildings;
 
 import game.Game;
 
 import java.util.ArrayList;
 
+import units.nexus.Probe;
 import logger.SCLogger;
-import units.Probe;
 
 public class ExpansionNexus extends Nexus {
 
@@ -48,8 +48,8 @@ public class ExpansionNexus extends Nexus {
 			this.getGame().addMinerals(deltaMinerals);
 		}
 		
-		if (game.goalInvolves(Probe.class)){
-			this.build(new Probe(game));
+		if (game.goalInvolves(Probe.class) && game.needsMore(Probe.class)){
+				this.build(new Probe(game));
 		}
 		super.passTime();
 	}
