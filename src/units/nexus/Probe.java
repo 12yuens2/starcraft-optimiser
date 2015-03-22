@@ -61,7 +61,7 @@ public class Probe extends Builder{
 		}
 
 		//Move this to another place when things are good and stuff ._.
-		if ( game.needsMore(Zealot.class)){
+		if ( game.needsMore(Zealot.class) && game.canSupport(game.getIncome(game.getNumberOf("Probe")), "Zealot")){
 			this.build(new Gateway(game));
 		}
 		

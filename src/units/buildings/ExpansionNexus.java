@@ -9,10 +9,8 @@ import logger.SCLogger;
 
 public class ExpansionNexus extends Nexus {
 
-	private static final double INITIAL_MINERALS = 9000, INITIAL_GAS = 5000;
-	private static final double PROBE_MINING_PER_MINUTE = 41, THIRD_PROBE_MINING_PER_MINUTE = 20;
-	private static final double PROBE_MINING_PER_SECOND = PROBE_MINING_PER_MINUTE/60.0;
-	private static final double THIRD_PROBE_MINING_PER_SECOND = THIRD_PROBE_MINING_PER_MINUTE/60.0;
+
+
 	private ArrayList<Probe> mineralLine = new ArrayList<>();
 	private ArrayList<Probe> gas = new ArrayList<>();
 	private double remainingMinerals;
@@ -28,15 +26,7 @@ public class ExpansionNexus extends Nexus {
 	
 	@Override
 	public void passTime() {
-		double deltaMinerals = 0;
-		int mineralProbes = mineralLine.size();
-		if (mineralProbes <= 16 ){
-			deltaMinerals = mineralLine.size()*PROBE_MINING_PER_SECOND;
-		} else if (mineralProbes <= 24){
-			deltaMinerals = (mineralLine.size()-16)*THIRD_PROBE_MINING_PER_SECOND + 16*PROBE_MINING_PER_SECOND;
-		} else if (mineralProbes > 24){
-			deltaMinerals = 8*THIRD_PROBE_MINING_PER_SECOND + 16*PROBE_MINING_PER_SECOND;
-		}
+		double deltaMinerals = calculateIncome(mineralLine.size());
 		if (deltaMinerals > this.remainingMinerals){
 			deltaMinerals = this.remainingMinerals;
 		}
@@ -48,12 +38,24 @@ public class ExpansionNexus extends Nexus {
 			this.getGame().addMinerals(deltaMinerals);
 		}
 		
-		if (game.goalInvolves(Probe.class) && game.needsMore(Probe.class)){
+		if ((game.goalInvolves(Probe.class) && game.needsMore(Probe.class)) || game.moreProbes()){
 				this.build(new Probe(game));
-		}
+		} 
 		super.passTime();
 	}
 
+	public double calculateIncome(int mineralProbes) {
+		double income = 0;
+		if (mineralProbes <= 16 ){
+			income = mineralLine.size()*PROBE_MINING_PER_SECOND;
+		} else if (mineralProbes <= 24){
+			income = (mineralLine.size()-16)*THIRD_PROBE_MINING_PER_SECOND + 16*PROBE_MINING_PER_SECOND;
+		} else if (mineralProbes > 24){
+			income = 8*THIRD_PROBE_MINING_PER_SECOND + 16*PROBE_MINING_PER_SECOND;
+		}
+		return income;
+	}
+	
 	public void addMineralProbe(Probe probe){
 		mineralLine.add(probe);
 	}
@@ -68,5 +70,9 @@ public class ExpansionNexus extends Nexus {
 	
 	public double getGas(){
 		return remainingGas;
+	}
+	
+	public int getMineralLineSize() {
+		return mineralLine.size();
 	}
 }

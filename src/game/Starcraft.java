@@ -13,10 +13,11 @@ public class Starcraft {
 	public static void main(String[] args) {
 
 		HashMap<Class,Integer> goal = new HashMap<>();
+		Datasheet.init();
 		
-		goal.put(Probe.class, 4);
-		goal.put(Zealot.class, 4);
-		
+//		goal.put(Probe.class, 10);
+		goal.put(Zealot.class, 2);
+
 		
 		Game testGame = new Game(goal);
 

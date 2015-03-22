@@ -7,7 +7,12 @@ import gameobjects.Builder;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 
 import com.oracle.xmlns.internal.webservices.jaxws_databinding.ExistingAnnotationsType;
 
@@ -114,7 +119,6 @@ public class Game {
 	}
 
 	public String getTimestamp(){
-
 		return ""+ (time/60 >=10 ? time/60 : "0" + time/60 ) + ":" + (time%60 >= 10 ? time%60 : "0" + time%60) ;
 	}
 	
@@ -140,6 +144,51 @@ public class Game {
 
 	public void addSupply(int supply) {
 		this.supply += supply;
+	}
+	
+	public double getIncome(int numberOfProbes) {
+		double income = 0;
+		
+		int numberOfNexi = getNumberOf("ExpansionNexus");
+		
+		int bunchesOfSixteen = numberOfProbes/16;
+		int remainder = numberOfProbes%16;
+		if (bunchesOfSixteen == numberOfNexi){
+			income = bunchesOfSixteen*16*Nexus.PROBE_MINING_PER_SECOND 
+					+ remainder*Nexus.THIRD_PROBE_MINING_PER_SECOND;
+		} else if (bunchesOfSixteen < numberOfNexi){
+			income = bunchesOfSixteen*16*Nexus.PROBE_MINING_PER_SECOND 
+					+ remainder*Nexus.PROBE_MINING_PER_SECOND;
+		} else if (bunchesOfSixteen > numberOfNexi){
+			income = numberOfNexi*16*Nexus.PROBE_MINING_PER_SECOND 
+					+ (bunchesOfSixteen - numberOfNexi)*16*Nexus.THIRD_PROBE_MINING_PER_SECOND 
+					+ remainder*Nexus.THIRD_PROBE_MINING_PER_SECOND;
+		}
+		return income;
+	}
+	
+	public int getSpending() {
+		int spending = 0;
+		Iterator it = this.goal.entrySet().iterator();
+	    while (it.hasNext()) {
+	        Entry<Class, Integer> pair = (Map.Entry<Class,Integer>)it.next();
+	        Class unitType = pair.getKey();
+	        int numberofBuildingsOfUnit = getNumberOf(Datasheet.getBuiltFrom(unitType.getSimpleName()));
+	        numberofBuildingsOfUnit = ( numberofBuildingsOfUnit > goal.get(unitType) ? goal.get(unitType) : numberofBuildingsOfUnit );
+	        spending += numberofBuildingsOfUnit*Datasheet.getMineralCost(unitType.getSimpleName());
+	        
+	    }
+		return spending;
+	}
+	
+	public int getNumberOf(String unitName) {
+		int count = 0;
+		for (GameObject go : gameObjects) {
+			if (go.getClass().getSimpleName().equals(unitName)) {
+				count++;
+			}
+		}
+		return count;
 	}
 	
 	public void checkNewUnit(Class unitClass){
@@ -177,5 +226,63 @@ public class Game {
 			needsMore = true;
 		}
 		return needsMore;
+	}
+	 
+	public double timeTakenToReachGoal(double income){
+		double buildTime = 0;
+		int buildCost = 0;
+		HashSet<String> dependancies = new HashSet<>();
+		ArrayList<Entity> buildings = new ArrayList<>();
+		
+		for (Entry<Class, Integer> unitGoal : this.goal.entrySet()){
+			if (unitGoal.getValue() > 0){
+				String nameOfUnit = unitGoal.getKey().getSimpleName();
+				while (nameOfUnit != null && this.getNumberOf(Datasheet.getDependancy(nameOfUnit)) == 0) {
+					nameOfUnit = Datasheet.getDependancy(nameOfUnit);
+					if (nameOfUnit != null){
+						dependancies.add(nameOfUnit);						
+					}
+
+				}
+				for (String nameOfDependancy : dependancies){
+					String dependancyName = Datasheet.getDependancy(nameOfDependancy);
+					if (dependancyName != null){
+						buildTime+= Datasheet.getBuildTime(dependancyName);
+						buildCost+= Datasheet.getMineralCost(dependancyName);						
+					}
+				}
+
+				nameOfUnit = unitGoal.getKey().getSimpleName();
+				if (this.getNumberOf(Datasheet.getDependancy(nameOfUnit)) == 0){
+					String dependancyName = Datasheet.getDependancy(nameOfUnit);
+					if (dependancyName != null){
+						buildTime+= Datasheet.getBuildTime(dependancyName);
+						buildCost+= Datasheet.getMineralCost(dependancyName);						
+					}
+				}
+				int numberOfBuildings = this.getNumberOf(Datasheet.getBuiltFrom(nameOfUnit));
+				if (numberOfBuildings == 0){
+					numberOfBuildings++;
+					buildTime+= Datasheet.getBuildTime(Datasheet.getBuiltFrom(nameOfUnit));
+					buildCost+= Datasheet.getMineralCost(Datasheet.getBuiltFrom(nameOfUnit));
+				}
+				buildTime+= Datasheet.getBuildTime(nameOfUnit)*unitGoal.getValue()/(1.0*numberOfBuildings);
+				buildCost+= Datasheet.getMineralCost(nameOfUnit)*unitGoal.getValue();
+			}
+			System.out.println("income is : " + income + " buildcost : " + buildCost + " buildtime: " + buildTime);
+			while (income < buildCost/buildTime){
+				buildTime++;
+			}
+		}
+		System.out.println("The bulid time at " + this.getTimestamp() + " is : " + buildTime + " costing " + buildCost + " minerals.");
+		return buildTime;
+	}
+	
+	public boolean canSupport(double income, String unitType){
+		return (income - getSpending() > Datasheet.getMineralCost(unitType)/Datasheet.getBuildTime(unitType));
+	}
+	
+	public boolean moreProbes () {
+		return (timeTakenToReachGoal(getIncome(getNumberOf("Probe"))) > timeTakenToReachGoal(getIncome(getNumberOf("Probe") + 1)));
 	}
 }
