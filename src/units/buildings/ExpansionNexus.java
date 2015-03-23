@@ -10,20 +10,25 @@ import logger.SCLogger;
 public class ExpansionNexus extends Nexus {
 
 
-
 	private ArrayList<Probe> mineralLine = new ArrayList<>();
 	private ArrayList<Probe> gas = new ArrayList<>();
 	private double remainingMinerals;
 	private double remainingGas;
+
 	
-	
+
+	public ExpansionNexus() {
+		
+	}
+
 	public ExpansionNexus(Game game){
 		super(game);
 		remainingMinerals = INITIAL_MINERALS;
 		remainingGas = INITIAL_GAS;
 
 	}
-	
+
+
 	@Override
 	public void passTime() {
 		double deltaMinerals = calculateIncome(mineralLine.size());
@@ -38,8 +43,8 @@ public class ExpansionNexus extends Nexus {
 			this.getGame().addMinerals(deltaMinerals);
 		}
 		
-		if ((game.goalInvolves(Probe.class) && game.needsMore(Probe.class)) || game.moreProbes()){
-				this.build(new Probe(game));
+		if ((game.goalInvolves("Probe") && game.needsMore("Probe")) || game.moreProbes()){
+				this.build("Probe");
 		} 
 		super.passTime();
 	}

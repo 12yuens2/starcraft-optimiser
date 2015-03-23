@@ -12,6 +12,10 @@ public class Nexus extends Builder {
 	public static final double PROBE_MINING_PER_SECOND = PROBE_MINING_PER_MINUTE/60.0;
 	public static final double THIRD_PROBE_MINING_PER_SECOND = THIRD_PROBE_MINING_PER_MINUTE/60.0;
 	
+	public Nexus() {
+		
+	}
+	
 	public Nexus(Game game) {
 		super(game);
 	}

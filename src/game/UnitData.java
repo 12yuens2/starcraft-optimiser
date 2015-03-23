@@ -1,5 +1,7 @@
 package game;
 
+import gameobjects.Entity;
+
 public class UnitData {
 	String name;
 	String dependancy;
@@ -8,8 +10,9 @@ public class UnitData {
 	int gasCost;
 	int supplyCost;
 	int buildTime;
+	Entity unit;
 
-	public UnitData(String name, String dependancy, String buildFrom, int mineralCost, int gasCost, int supplyCost, int buildTime) {
+	public UnitData(String name, String dependancy, String buildFrom, int mineralCost, int gasCost, int supplyCost, int buildTime, Entity unit) {
 		this.name = name;
 		this.dependancy = dependancy;
 		this.builtFrom = buildFrom;
@@ -17,6 +20,7 @@ public class UnitData {
 		this.gasCost = gasCost;
 		this.supplyCost = supplyCost;
 		this.buildTime = buildTime;
+		this.unit = unit;
 	}
 
 	public String getName() {
@@ -40,7 +44,9 @@ public class UnitData {
 	public String getBuiltFrom() {
 		return builtFrom;
 	}
-	
+	public Entity getUnit() {
+		return unit;
+	}
 
 
 }

@@ -11,10 +11,14 @@ public class Gateway extends Builder{
 		setResources(150, 0, 0, 65);
 	}
 	
+	public Gateway() {
+		// TODO Auto-generated constructor stub
+	}
+
 	public void passTime(){
 		super.passTime();
-		if (game.goalInvolves(Zealot.class) && game.needsMore(Zealot.class)){
-			this.build(new Zealot());
+		if (game.goalInvolves("Zealot") && game.needsMore("Zealot")){
+			this.build("Zealot");
 		}
 	}
 }

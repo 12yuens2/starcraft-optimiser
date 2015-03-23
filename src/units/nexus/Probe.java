@@ -5,8 +5,10 @@ import units.buildings.Gateway;
 import units.gateway.Zealot;
 import logger.SCLogger;
 import game.Game;
+import gameobjects.BuildOrder;
 import gameobjects.Builder;
 import gameobjects.Entity;
+import gameobjects.GameObject;
 
 public class Probe extends Builder{
 	
@@ -15,6 +17,10 @@ public class Probe extends Builder{
 		setResources(50, 0, 0, 17);
 	}
 	
+	public Probe() {
+
+	}
+
 	private ExpansionNexus mineralNexus = null;
 	private ExpansionNexus gasNexus = null;
 	private boolean isBuilding;
@@ -61,8 +67,8 @@ public class Probe extends Builder{
 		}
 
 		//Move this to another place when things are good and stuff ._.
-		if ( game.needsMore(Zealot.class) && game.canSupport(game.getIncome(game.getNumberOf("Probe")), "Zealot")){
-			this.build(new Gateway(game));
+		if ( game.needsMore("Zealot") && game.canSupport(game.getIncome(game.getNumberOf("Probe")), "Zealot")){
+			this.build("Gateway");
 		}
 		
 		
@@ -75,5 +81,7 @@ public class Probe extends Builder{
 		}
 		
 	}
+	
+	
 
 }

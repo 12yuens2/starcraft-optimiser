@@ -30,7 +30,7 @@ public class Game {
 	private int time = 0;
 	public static final int SUPPLY_LIMIT = 200;
 	
-	private HashMap<Class,Integer> goal = new HashMap<>();
+	private HashMap<String,Integer> goal = new HashMap<>();
 	
 	
 	ArrayList<GameObject> gameObjects  = new ArrayList<>();
@@ -114,8 +114,11 @@ public class Game {
 	}
 
 	public void addGameObejct(Entity entity) {
+		if (entity instanceof Builder) {
+			((Builder)entity).assignGame(this);
+		}
 		this.tempGameObjects.add(entity);
-		this.checkNewUnit(entity.getClass());
+		this.checkNewUnit(entity.getClass().getSimpleName());
 	}
 
 	public String getTimestamp(){
@@ -171,27 +174,38 @@ public class Game {
 		int spending = 0;
 		Iterator it = this.goal.entrySet().iterator();
 	    while (it.hasNext()) {
-	        Entry<Class, Integer> pair = (Map.Entry<Class,Integer>)it.next();
-	        Class unitType = pair.getKey();
-	        int numberofBuildingsOfUnit = getNumberOf(Datasheet.getBuiltFrom(unitType.getSimpleName()));
+	        Entry<String, Integer> pair = (Map.Entry<String,Integer>)it.next();
+	        String unitType = pair.getKey();
+	        int numberofBuildingsOfUnit = getNumberOf(Datasheet.getBuiltFrom(unitType)) 
+	        		+ getBuildingsInQueue(Datasheet.getBuiltFrom(unitType));
 	        numberofBuildingsOfUnit = ( numberofBuildingsOfUnit > goal.get(unitType) ? goal.get(unitType) : numberofBuildingsOfUnit );
-	        spending += numberofBuildingsOfUnit*Datasheet.getMineralCost(unitType.getSimpleName());
+	        spending += numberofBuildingsOfUnit*Datasheet.getMineralCost(unitType);
 	        
 	    }
 		return spending;
 	}
 	
-	public int getNumberOf(String unitName) {
+	public int getNumberOf(String entityName) {
 		int count = 0;
 		for (GameObject go : gameObjects) {
-			if (go.getClass().getSimpleName().equals(unitName)) {
+			if (go.getClass().getSimpleName().equals(entityName)) {
 				count++;
 			}
 		}
 		return count;
 	}
 	
-	public void checkNewUnit(Class unitClass){
+	public int getBuildingsInQueue(String buildingName) {
+		int count = 0;
+		for (GameObject go : gameObjects) {
+			if (go.getClass().getSimpleName().equals("Probe")) {
+				count+=((Probe)go).getNumberOfInBuildQueue(buildingName);
+			}
+		}
+		return count;
+	}
+	
+	public void checkNewUnit(String unitClass){
 		if (goal.containsKey(unitClass)){
 			Integer unitCount = goal.get(unitClass);
 			if (unitCount > 0){
@@ -208,16 +222,21 @@ public class Game {
 		return goalMet;
 	}
 	
-	public boolean goalInvolves(Class unitType){
+	public boolean goalInvolves(String unitType){
 		return goal.containsKey(unitType);
 	}
 
-	public boolean needsMore(Class unitType) {
+	public boolean needsMore(String unitType) {
 		int unitsLeft = goal.get(unitType);
 		boolean needsMore = false;
+		/*for (GameObject go : gameObjects) {
+			if (go instanceof Builder) {
+				unitsLeft-=((Builder)go).getNumberOfInBuildQueue(unitType);
+			}
+		}*/
 		for (LinkedList<BuildOrder> unitQueue : buildQueues){
-			for (BuildOrder order : unitQueue){
-				if (order.getUnit().getClass().equals(unitType)){
+			for (BuildOrder bo : unitQueue){
+				if (bo.getUnitName().equals(unitType)){
 					unitsLeft--;
 				}
 			}
@@ -234,9 +253,9 @@ public class Game {
 		HashSet<String> dependancies = new HashSet<>();
 		ArrayList<Entity> buildings = new ArrayList<>();
 		
-		for (Entry<Class, Integer> unitGoal : this.goal.entrySet()){
+		for (Entry<String, Integer> unitGoal : this.goal.entrySet()){
 			if (unitGoal.getValue() > 0){
-				String nameOfUnit = unitGoal.getKey().getSimpleName();
+				String nameOfUnit = unitGoal.getKey();
 				while (nameOfUnit != null && this.getNumberOf(Datasheet.getDependancy(nameOfUnit)) == 0) {
 					nameOfUnit = Datasheet.getDependancy(nameOfUnit);
 					if (nameOfUnit != null){
@@ -252,7 +271,7 @@ public class Game {
 					}
 				}
 
-				nameOfUnit = unitGoal.getKey().getSimpleName();
+				nameOfUnit = unitGoal.getKey();
 				if (this.getNumberOf(Datasheet.getDependancy(nameOfUnit)) == 0){
 					String dependancyName = Datasheet.getDependancy(nameOfUnit);
 					if (dependancyName != null){
@@ -269,12 +288,12 @@ public class Game {
 				buildTime+= Datasheet.getBuildTime(nameOfUnit)*unitGoal.getValue()/(1.0*numberOfBuildings);
 				buildCost+= Datasheet.getMineralCost(nameOfUnit)*unitGoal.getValue();
 			}
-			System.out.println("income is : " + income + " buildcost : " + buildCost + " buildtime: " + buildTime);
+			//System.out.println("income is : " + income + " buildcost : " + buildCost + " buildtime: " + buildTime);
 			while (income < buildCost/buildTime){
 				buildTime++;
 			}
 		}
-		System.out.println("The bulid time at " + this.getTimestamp() + " is : " + buildTime + " costing " + buildCost + " minerals.");
+		//System.out.println("The bulid time at " + this.getTimestamp() + " is : " + buildTime + " costing " + buildCost + " minerals." + " income : " + income);
 		return buildTime;
 	}
 	
@@ -283,6 +302,7 @@ public class Game {
 	}
 	
 	public boolean moreProbes () {
-		return (timeTakenToReachGoal(getIncome(getNumberOf("Probe"))) > timeTakenToReachGoal(getIncome(getNumberOf("Probe") + 1)));
+		return (timeTakenToReachGoal(getIncome(getNumberOf("Probe"))) 
+				> (timeTakenToReachGoal(getIncome(getNumberOf("Probe") + 1)))+Datasheet.getBuildTime("Probe"));
 	}
 }
