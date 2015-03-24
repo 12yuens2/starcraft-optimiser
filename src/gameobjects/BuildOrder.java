@@ -9,7 +9,7 @@ public class BuildOrder {
 	public BuildOrder(String unit, int buildTime) {
 		super();
 		this.unit = unit;
-		this.buildTime = -buildTime;
+		this.buildTime = 0;
 	}
 	
 	public void increment(){

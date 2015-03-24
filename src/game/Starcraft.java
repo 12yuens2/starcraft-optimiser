@@ -2,6 +2,7 @@ package game;
 
 import gameobjects.GameObject;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -16,7 +17,7 @@ public class Starcraft {
 		Datasheet.init();
 		
 //		goal.put(Probe.class, 10);
-		goal.put("Zealot", 1);
+		goal.put("Zealot", 4);
 
 		
 		Game testGame = new Game(goal);

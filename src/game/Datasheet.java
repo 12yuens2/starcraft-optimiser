@@ -17,19 +17,19 @@ public class Datasheet {
 		unitData = new ArrayList<>();
 
 		//Buildings
-		unitData.add(new UnitData("ExpansionNexus", null,"Probe", 400, 0, 0, 100, new ExpansionNexus()));
+		unitData.add(new UnitData("Nexus", null,"Probe", 400, 0, 0, 100, new ExpansionNexus()));
 		unitData.add(new UnitData("Pylon", null,"Probe", 100, 0, 0, 25, new Pylon()));
 		unitData.add(new UnitData("Assimilator", null,"Probe", 75, 0, 0, 30, new Assimilator()));
 		unitData.add(new UnitData("Gateway", "Pylon", "Probe",150, 0, 0, 65, new Gateway()));
-/*		unitData.add(new UnitData("CyberneticsCore", "Gateway","Probe", 150, 0, 0, 50));
-		unitData.add(new UnitData("RoboticsFacility", "CyberneticsCore","Probe", 200, 100, 0, 65));
-		unitData.add(new UnitData("Stargate", "CyberneticsCore","Probe", 150, 150, 0, 60));
+/*		unitData.add(new UnitData("Cybernetics Core", "Gateway","Probe", 150, 0, 0, 50));
+		unitData.add(new UnitData("Robotics Facility", "Cybernetics Core","Probe", 200, 100, 0, 65));
+		unitData.add(new UnitData("Stargate", "Cybernetics Core","Probe", 150, 150, 0, 60));
 		unitData.add(new UnitData("Forge", "Pylon","Probe", 150, 0, 0, 45));
-		unitData.add(new UnitData("TwilightCouncil", "CyberneticsCore","Probe", 150, 100, 0, 50));
-		unitData.add(new UnitData("TemplarArchives", "TwilightCouncil","Probe", 150, 200, 0, 50));
-		unitData.add(new UnitData("DarkShrine", "TwilightCouncil","Probe", 100, 250, 0, 100));
-		unitData.add(new UnitData("RoboticsBay", "RoboticsFacility","Probe", 200, 200, 0, 65));
-		unitData.add(new UnitData("FleetBeacon", "Stargate","Probe", 300, 200, 0, 60));*/
+		unitData.add(new UnitData("Twilight Council", "Cybernetics Core","Probe", 150, 100, 0, 50));
+		unitData.add(new UnitData("Templar Archives", "Twilight Council","Probe", 150, 200, 0, 50));
+		unitData.add(new UnitData("Dark Shrine", "Twilight Council","Probe", 100, 250, 0, 100));
+		unitData.add(new UnitData("Robotics Bay", "Robotics Facility","Probe", 200, 200, 0, 65));
+		unitData.add(new UnitData("Fleet Beacon", "Stargate","Probe", 300, 200, 0, 60));*/
 		
 		//Units
 		unitData.add(new UnitData("Probe", null, "Nexus", 50, 0, 1, 17, new Probe()));

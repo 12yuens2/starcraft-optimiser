@@ -29,6 +29,7 @@ public class Game {
 	private int maxSupply = 0;
 	private int time = 0;
 	public static final int SUPPLY_LIMIT = 200;
+	private static final int STARTING_SUPPLY = 6;
 	
 	private HashMap<String,Integer> goal = new HashMap<>();
 	
@@ -50,6 +51,7 @@ public class Game {
 		gameObjects.add(new Probe(this));
 		gameObjects.add(new Probe(this));
 		gameObjects.add(new Probe(this));
+		this.supply = STARTING_SUPPLY;
 	}
 	
 	public void passTime(){
@@ -279,8 +281,15 @@ public class Game {
 						buildCost+= Datasheet.getMineralCost(dependancyName);						
 					}
 				}
+				
 				int numberOfBuildings = this.getNumberOf(Datasheet.getBuiltFrom(nameOfUnit));
 				if (numberOfBuildings == 0){
+					numberOfBuildings++;
+					buildTime+= Datasheet.getBuildTime(Datasheet.getBuiltFrom(nameOfUnit));
+					buildCost+= Datasheet.getMineralCost(Datasheet.getBuiltFrom(nameOfUnit));
+				}
+
+				if (canSupport(income, nameOfUnit)) {
 					numberOfBuildings++;
 					buildTime+= Datasheet.getBuildTime(Datasheet.getBuiltFrom(nameOfUnit));
 					buildCost+= Datasheet.getMineralCost(Datasheet.getBuiltFrom(nameOfUnit));
