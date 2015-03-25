@@ -17,7 +17,7 @@ public class Starcraft {
 		Datasheet.init();
 		
 //		goal.put(Probe.class, 10);
-		goal.put("Zealot", 4);
+		goal.put("Zealot", 40);
 
 		
 		Game testGame = new Game(goal);

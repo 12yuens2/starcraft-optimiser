@@ -123,6 +123,8 @@ public class Datasheet {
 		//Buildings
 		case "Gateway":
 			return new Gateway();
+		case "Pylon":
+			return new Pylon();
 		
 		default: return findName(unitType).getUnit();
 		}
