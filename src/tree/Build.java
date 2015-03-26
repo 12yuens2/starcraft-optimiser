@@ -5,7 +5,7 @@ import game.Datasheet;
 public class Build {
 	String nameOfUnit;
 	int time;
-	int buildTime;
+	double buildTime;
 
 	public Build(String nameOfUnit){
 		this.nameOfUnit = nameOfUnit;
@@ -36,7 +36,7 @@ public class Build {
 		return time;
 	}
 	
-	public int getBuildTime() {
+	public double getBuildTime() {
 		return buildTime;
 	}
 }

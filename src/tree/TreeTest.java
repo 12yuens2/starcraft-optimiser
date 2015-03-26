@@ -9,19 +9,28 @@ public class TreeTest {
 	
 	public static void main(String[] args) {
 		
-		final int MAX_NUMBER_OF_TRIALS = 1000000;
+		final int MAX_NUMBER_OF_TRIALS = 1000000000;
 		int numberOfTrials = 0;
+		
+		TimeState.MAX_TIME = 2000;
 		
 		HashMap<String,Integer> goal = new HashMap<>();
 		Datasheet.init();
 
-		goal.put("Zealot", 10);
+		goal.put("Zealot", 8);
+		goal.put("Stalker", 10);
+		goal.put("Immortal", 1);
+		goal.put("Sentry", 2);
+		goal.put("Observer", 1);
+		goal.put("Carrier", 3);
+		goal.put("Dark Templar", 2);
+		goal.put("Ground Armor 1", 1);
 		
 		while (numberOfTrials < MAX_NUMBER_OF_TRIALS){
 			TimeState gameTree = new TimeState(goal);	
 			numberOfTrials++;
 			if (numberOfTrials % 100 == 0){
-	//			System.out.println(numberOfTrials);
+				//System.out.println(numberOfTrials);
 			}
 		}
 

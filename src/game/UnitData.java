@@ -6,13 +6,12 @@ public class UnitData {
 	String name;
 	String dependancy;
 	String builtFrom;
-	int mineralCost;
-	int gasCost;
+	double mineralCost;
+	double gasCost;
 	int supplyCost;
-	int buildTime;
-	Entity unit;
+	double buildTime;
 
-	public UnitData(String name, String dependancy, String buildFrom, int mineralCost, int gasCost, int supplyCost, int buildTime, Entity unit) {
+	public UnitData(String name, String dependancy, String buildFrom, double mineralCost, double gasCost,int supplyCost, double buildTime) {
 		this.name = name;
 		this.dependancy = dependancy;
 		this.builtFrom = buildFrom;
@@ -20,7 +19,6 @@ public class UnitData {
 		this.gasCost = gasCost;
 		this.supplyCost = supplyCost;
 		this.buildTime = buildTime;
-		this.unit = unit;
 	}
 
 	public String getName() {
@@ -29,23 +27,20 @@ public class UnitData {
 	public String getDependancy(){
 		return dependancy;
 	}
-	public int getMineralCost() {
+	public double getMineralCost() {
 		return mineralCost;
 	}
-	public int getGasCost() {
+	public double getGasCost() {
 		return gasCost;
 	}
 	public int getSupplyCost() {
 		return supplyCost;
 	}
-	public int getBuildTime() {
+	public double getBuildTime() {
 		return buildTime;
 	}
 	public String getBuiltFrom() {
 		return builtFrom;
-	}
-	public Entity getUnit() {
-		return unit;
 	}
 
 

@@ -22,14 +22,15 @@ public class TimeState {
 	private HashMap<String,Integer> goal;
 	HashMap<String,Integer> unitNumbers;
 	
+	int probesOnGas;
+	
 	double minerals;
 	double gas;
 	int supply;
 	int maxSupply;
-	final int SUPPLY_LIMIT = 200;
 
 	int time;
-	static int MAX_TIME = 3000;
+	static int MAX_TIME;
 	
 	HashMap<String,ArrayList<Build>> buildQueues;
 	
@@ -50,6 +51,11 @@ public class TimeState {
 		unitNumbers.replace("Probe", 6);
 		
 		this.minerals = 50.0;
+		this.gas = 0;
+		this.supply = 6;
+		this.maxSupply = 10;
+		
+		this.probesOnGas = 0;
 		
 		ArrayList<Operation> possibleOperations = getPossibleOperations();
 		Random generator = new Random();
@@ -68,13 +74,18 @@ public class TimeState {
 		this.minerals = parent.minerals;
 		this.gas = parent.gas;
 		this.supply = parent.supply;
+		this.maxSupply = parent.maxSupply;
+		this.probesOnGas = parent.probesOnGas;
 		
-
-		this.unitNumbers = parent.cloneUnitNumbers();
+//		this.unitNumbers = parent.cloneUnitNumbers();
 		
-		this.buildQueues = parent.cloneBuildQueues();
+//		this.buildQueues = parent.cloneBuildQueues();
 		
-		this.goal = parent.cloneGoal();		
+//		this.goal = parent.cloneGoal();		
+		
+		this.unitNumbers = parent.unitNumbers;
+		this.buildQueues = parent.buildQueues;
+		this.goal = parent.goal;
 		
 		this.executeOperation(operation);
 		
@@ -92,7 +103,7 @@ public class TimeState {
 			printMe();
 			TimeState.MAX_TIME = time;
 		} else {	
-//			printMe();
+			//printMe(operation);
 			//System.out.println("\t--\t--\t--\t--");
 			if (this.time < MAX_TIME){
 				this.futureStates = new ArrayList<>();
@@ -108,9 +119,9 @@ public class TimeState {
 					}
 				}
 			} else {
-				//System.out.println("Goal did not complete in "  + time + " seconds. Shortest time so far is " + time);
-				//printMe();
-				//System.out.println("\n\n\n");
+				System.out.println("Goal did not complete in "  + time + " seconds. Shortest time so far is " + time);
+				printMe();
+			//	System.out.println("\n\n\n");
 			}
 		}
 	}
@@ -118,72 +129,58 @@ public class TimeState {
 	public HashMap<String, Integer> getGoal() {
 		return goal;
 	}
-	
-	private HashMap<String, Integer> cloneUnitNumbers() {
-		HashMap<String, Integer>  newNumbers = new HashMap<>();
-		for (Entry<String,Integer> entry : unitNumbers.entrySet() ){
-			newNumbers.put(entry.getKey(), entry.getValue());
-		}
-		return newNumbers;
-	}
-	
-	private HashMap<String, ArrayList<Build>> cloneBuildQueues() {
-		HashMap<String, ArrayList<Build>> newQueue = new HashMap<>();
-		for (Entry<String,ArrayList<Build>> entry : this.buildQueues.entrySet()){
-			ArrayList<Build> newBuild = new ArrayList<>();
-			for (Build b : entry.getValue()){
-				newBuild.add(b.deepClone());
-			}
-			newQueue.put(entry.getKey(), newBuild);
-		}
-		return newQueue;
 		
-	}
-	
-	private HashMap<String, Integer> cloneGoal() {
-		HashMap<String,Integer> newGoal = new HashMap<>();
-		for (Entry<String,Integer> entry : this.goal.entrySet()){
-			newGoal.put(entry.getKey(), entry.getValue());
-		}
-		return newGoal;
-	}
-	
 	private ArrayList<Operation> getPossibleOperations() {
 		ArrayList<Operation> ops = new ArrayList<>();
 		
+		//do nothing
 		ops.add(new Operation("wait", ""));
 		
+		//assigning workers
+		if (needMoreGas() && probesOnGas<unitNumbers.get("Assimilator")*3) {
+			ops.add(new Operation("assign", "gas"));
+		} else if (probesOnGas > 0){
+			ops.add(new Operation("assign", "minerals"));
+		}
+		
+		
+		//Building units and buildings
 		for (UnitData data : Datasheet.unitData){
-			if (minerals >= Datasheet.getMineralCost(data.getName()) && buildQueues.get(data.getBuiltFrom()).size() < unitNumbers.get(data.getBuiltFrom())) {
-				switch (data.getName()){
-				case "Probe" :
+			if (minerals >= Datasheet.getMineralCost(data.getName()) && gas >= Datasheet.getGasCost(data.getName()) 
+					&& supply + getSupplyInBuildQueues() + Datasheet.getSupplyCost(data.getName()) <= maxSupply 
+					&& buildQueues.get(data.getBuiltFrom()).size() < unitNumbers.get(data.getBuiltFrom())) {
+				
+				if (isProbe(data.getName())){
 					if (Heuristics.moreProbes(this)){
-						ops.add(new Operation("build", data.getName()));						
+						ops.add(new Operation("build", data.getName()));			
 					}
-					break;
-				case "Assimilator" :
-					if (getTotalNumber("Assimilator") < getTotalNumber("Nexus") && needsGas()){
+				}
+				if (isAssimilator(data.getName()) && needsGas()){
+					if (hasFreeGeysers()) {
 						ops.add(new Operation("build", data.getName()));
 					}
-					break;
-				case "Nexus" :
-					
-					break;
-				case "Zealot" :
-					if (needsMoreForGoal("Zealot")){
+				}
+				if (isPylon(data.getName())) {
+					if (needMoreSupply()) {
+						ops.add(new Operation("build", data.getName()));
+					}
+				}
+				if (isUnit(data.getName())){
+					if (needsMoreForGoal(data.getName())){
+						ops.add(new Operation("build", data.getName()));
+					}
+				}
+				if (isBuilder(data.getName())){
+					if (needsMoreFromBuilder(data.getName()) && canSupportFromBuilder(data.getName())){
+						// checking for support
 						ops.add(new Operation("build", data.getName()));						
 					}
-					break;
-				case "Gateway" :
-					for (Entry<String,Integer> entry : goal.entrySet()){
-						if (Datasheet.getBuiltFrom(entry.getKey()).equals("Gateway")){
-							if (Heuristics.canSupport(getIncome(), entry.getKey())){
-								ops.add(new Operation("build", data.getName()));								
-							}
-						}
-					}
-					break;
 				}
+				if (isUpgrade(data.getName())) {
+					ops.add(new Operation("build", data.getName()));
+				}
+				//nexus for expansion
+
 			}
 //			Heuristics.makeProductionBuildings(ops, data, this);
 //			ops.add(new Operation("build", data.getName()));
@@ -195,10 +192,36 @@ public class TimeState {
 		return ops;
 	}
 	
+
+	private boolean hasFreeGeysers() {
+		return (unitNumbers.get("Nexus")*2 > unitNumbers.get("Assimilator"));
+	}
+	
+	private boolean canSupportFromBuilder(String name) {
+
+		double excessMinerals = getMineralIncome() - getMineralSpending();
+		double excessGas = getGasIncome() - getGasSpending();
+		
+		for (Entry<String,Integer> entry : goal.entrySet()){
+
+			double mineralRateCost = Datasheet.getMineralCost(entry.getKey())/(1.0*Datasheet.getBuildTime(entry.getKey()));
+			double gasRateCost = Datasheet.getGasCost(entry.getKey())/(1.0*Datasheet.getBuildTime(entry.getKey()));
+			
+			if (Datasheet.getBuiltFrom(entry.getKey()).equals(name)){
+				if (excessMinerals >= mineralRateCost && excessGas  >= gasRateCost){
+					return true;
+				}
+			}
+		}
+	
+		return false;
+	}
+	
 	private void executeOperation(Operation op) {
 		//pass time first
-		this.minerals += getIncome(unitNumbers.get("Probe"));
-		//System.out.println("Operation: " + op.getVerb() + " " + op.getNoun());
+		this.minerals += getMineralIncome();
+		this.gas += getGasIncome();
+		//System.out.println(time + ": Operation: " + op.getVerb() + " " + op.getNoun());
 
 		//Increment all build orders.
 		for (ArrayList<Build> buildQueue : buildQueues.values()){
@@ -208,6 +231,7 @@ public class TimeState {
 				//System.out.println("Building " + build.nameOfUnit + " " + build.time + "/" + build.buildTime);
 				if (build.getTime() >= build.getBuildTime()){
 					unitNumbers.replace(build.nameOfUnit, unitNumbers.get(build.nameOfUnit) + 1);
+					addSupply(build.nameOfUnit);
 					iterator.remove();
 				}
 			}
@@ -216,36 +240,86 @@ public class TimeState {
 		//check everything on the server side.
 		switch (op.getVerb()){
 		case "wait":
-			
+			//wait...
 			break;
 		case "build":
 			for (UnitData data : Datasheet.unitData) {
 				if (op.getNoun().equals(data.getName())){
 					this.minerals -= Datasheet.getMineralCost(op.getNoun());
+					this.gas -= Datasheet.getGasCost(op.getNoun());
 					this.buildQueues.get(Datasheet.getBuiltFrom(op.getNoun())).add(new Build(op.getNoun()));
 				}
+			}
+			break;
+		case "assign":
+			switch (op.getNoun()) {
+			case "minerals":
+				probesOnGas--;
+				break;
+			case "gas":
+				probesOnGas++;
+				break;
 			}
 			break;
 		}
 	}
 	
+	private boolean needMoreSupply() {
+		return (maxSupply < getSupplyOfGoal()+unitNumbers.get("Probe"));
+	}
+	
+	private int getSupplyOfGoal() {
+		int supply = 0;
+		for (Entry<String, Integer> entry : goal.entrySet()) {
+			supply+=Datasheet.getSupplyCost(entry.getKey())*entry.getValue();
+		}
+		return supply;
+	}
+	
+	private void addSupply(String nameOfUnit) {
+		if (nameOfUnit.equals("Nexus")){
+			this.maxSupply += 10;
+		} else if (nameOfUnit.equals("Pylon")){
+			this.maxSupply += 8;
+		} else {
+			this.supply += Datasheet.getSupplyCost(nameOfUnit);
+		}
+		this.maxSupply = Math.min(maxSupply, Datasheet.MAX_SUPPLY);
+	}
 	private void printMe(){
-		System.out.println("At time " + time + " we have: ");
-		System.out.println(minerals + " minerals");
+		System.out.print("At time " + time + " we have: ");
+		System.out.print(minerals + " minerals ," + gas + " gas ," + supply + "/" + maxSupply + " : ");
 		for (Entry<String,Integer> entry: unitNumbers.entrySet()){
-			System.out.print(entry.getKey() + " : " + entry.getValue() + " , ");
+			if (entry.getValue() > 0){
+				System.out.print(entry.getKey() + " : " + entry.getValue() + " , ");
+			}
 		}
 		System.out.println();
 	}
 	
-	public double getIncome(){
-		return getIncome(unitNumbers.get("Probe"));
+	private void printMe(Operation op){
+		System.out.print("At time " + time + " we have: ");
+		System.out.print(minerals + " minerals ," + gas + " gas ," + supply + "/" + maxSupply + " : ");
+		for (Entry<String,Integer> entry: unitNumbers.entrySet()){
+			if (entry.getValue() > 0){
+				System.out.print(entry.getKey() + " : " + entry.getValue() + " , ");
+			}
+		}
+		System.out.print(" Operation " + op.getNoun() + "  " + op.getVerb());
+		System.out.println();
 	}
 	
-	public double getIncome(int numberOfProbes) {
+	
+	public double getMineralIncome(){
+		return getMineralIncome(unitNumbers.get("Probe"));
+	}
+	
+	public double getMineralIncome(int probes) {
 		double income = 0;
 		
 		int numberOfNexi = unitNumbers.get("Nexus");
+
+		int numberOfProbes = probes - this.probesOnGas;
 		
 		int bunchesOfSixteen = numberOfProbes/16;
 		int remainder = numberOfProbes%16;
@@ -263,7 +337,15 @@ public class TimeState {
 		return income;
 	}
 	
-	public int getSpending() {
+	public double getGasIncome(){
+		return getGasIncome(probesOnGas);
+	}
+	
+	public double getGasIncome(int probes){
+		return probes*Datasheet.GAS_PER_SECOND;
+	}
+	
+	public double getMineralSpending() {
 		int spending = 0;
 		Iterator it = this.buildQueues.entrySet().iterator();
 	    while (it.hasNext()) {
@@ -275,7 +357,18 @@ public class TimeState {
 		return spending;
 	}
 	
-
+	public int getGasSpending(){
+		int spending = 0;
+		Iterator it = this.buildQueues.entrySet().iterator();
+	    while (it.hasNext()) {
+	        Entry<String, ArrayList<Build>> pair = (Map.Entry<String,ArrayList<Build>>)it.next();
+	        String unitType = pair.getKey();
+	        spending += pair.getValue().size()*Datasheet.getGasCost(unitType)/Datasheet.getBuildTime(unitType);
+	        
+	    }
+		return spending;		
+	}
+	
 	public int getUnitNumberInBuildQueue(String name) {
 		int unitCount = 0;
 		for (Entry<String, ArrayList<Build>> entry : buildQueues.entrySet()){
@@ -286,6 +379,16 @@ public class TimeState {
 			}
 		}
 		return unitCount;
+	}
+	
+	public int getSupplyInBuildQueues(){
+		int tempSupply = 0;
+		for (Entry<String, ArrayList<Build>> entry : buildQueues.entrySet()){
+			for (Build build : entry.getValue()){
+				tempSupply += Datasheet.getSupplyCost(build.nameOfUnit);
+			}
+		}
+		return tempSupply;
 	}
 	
 	public int getTotalNumber(String unitType){
@@ -326,12 +429,24 @@ public class TimeState {
 		return false;
 	}
 	
+	private boolean needMoreGas() {
+		double gasCost = 0;
+		for (Entry<String,Integer> entry : goal.entrySet()){
+			gasCost += Datasheet.getGasCost(entry.getKey())*(entry.getValue()-unitNumbers.get(entry.getKey()));
+			
+		}
+		return (gasCost > gas);
+	}
+	
 	public boolean isProbe(String unitName){
 		return unitName.equals("Probe");
 	}
 
 	public boolean isAssimilator(String unitName){
 		return unitName.equals("Assimilator");
+	}
+	public boolean isPylon(String unitName) {
+		return unitName.equals("Pylon");
 	}
 	
 	public boolean canBuild(String unitName){
@@ -362,6 +477,19 @@ public class TimeState {
 				unitName.equals("Nexus") || unitName.equals("Gateway") || unitName.equals("Robotics Facility") ||
 				unitName.equals("Stargate") || unitName.equals("Mothership Core") || unitName.equals("High Templar") ||
 				unitName.equals("Probe") || unitName.equals("Carrier")
+		);
+	}
+	
+	public boolean isUpgrade(String unitName){
+		return (
+				unitName.equals("Warp Gate") || unitName.equals("Ground Weapons 1") || unitName.equals("Ground Weapons 2") ||
+				unitName.equals("Ground Weapons 3") || unitName.equals("Ground Armor 1") || unitName.equals("Ground Armor 2") ||
+				unitName.equals("Ground Armor 3") || unitName.equals("Shields 1") || unitName.equals("Shields 2") ||
+				unitName.equals("Shields 3") || unitName.equals("Air Weapons 1") || unitName.equals("Air Weapons 2") ||
+				unitName.equals("Air Weapons 3") || unitName.equals("Air Armor 1") || unitName.equals("Air Armor 2") ||
+				unitName.equals("Air Armor 3") || unitName.equals("Charge") || unitName.equals("Gravitic Boosters") ||
+				unitName.equals("Gravitic Drive") || unitName.equals("Anion Pulse-Crystal") || unitName.equals("Extended Thermal Lance") ||
+				unitName.equals("Psionic Storm") || unitName.equals("Blink") || unitName.equals("Graviton Catapult")
 		);
 	}
 	

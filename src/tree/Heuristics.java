@@ -24,17 +24,23 @@ public class Heuristics {
 	//		return (timeTaken(timeState.unitNumbers.get("Probe"), timeState) 
 	//			> timeTaken(timeState.unitNumbers.get("Probe")+1, timeState));
 			return (timeTaken(timeState.unitNumbers.get("Probe"), timeState));
-			//return true;
+	//		return true;
 	}
 	
-	public static boolean canSupport(double income, String unitType){
+	private static boolean canSupportMins(double income, String unitType){
 		return (income > Datasheet.getMineralCost(unitType)/Datasheet.getBuildTime(unitType));
+	}
+	
+	private static boolean canSupportGas(double gasIncome, String unitType) {
+		return (gasIncome > Datasheet.getGasCost(unitType)/Datasheet.getBuildTime(unitType));
 	}
 
 	private static boolean timeTaken(int numberOfProbes, TimeState timeState) {
-		double income = timeState.getIncome(numberOfProbes);
+		double income = timeState.getMineralIncome(numberOfProbes - timeState.probesOnGas);
+		double gasIncome = timeState.getGasIncome(timeState.probesOnGas);
 		double buildTime = 0;
-		int buildCost = 0;
+		int mineralCost = 0;
+		int gasCost = 0;
 		HashSet<String> dependancies = new HashSet<>();
 		ArrayList<Entity> buildings = new ArrayList<>();
 		
@@ -55,7 +61,8 @@ public class Heuristics {
 					String dependancyName = Datasheet.getDependancy(nameOfDependancy);
 					if (dependancyName != null){
 						buildTime+= Datasheet.getBuildTime(dependancyName);
-						buildCost+= Datasheet.getMineralCost(dependancyName);						
+						mineralCost+= Datasheet.getMineralCost(dependancyName);	
+						gasCost+=Datasheet.getGasCost(dependancyName);
 					}
 				}
 				
@@ -64,25 +71,32 @@ public class Heuristics {
 				if (numberOfBuildings == 0){
 					numberOfBuildings++;
 					buildTime+= Datasheet.getBuildTime(Datasheet.getBuiltFrom(nameOfUnit));
-					buildCost+= Datasheet.getMineralCost(Datasheet.getBuiltFrom(nameOfUnit));
+					mineralCost+= Datasheet.getMineralCost(Datasheet.getBuiltFrom(nameOfUnit));
+					gasCost+=Datasheet.getGasCost(Datasheet.getBuiltFrom(nameOfUnit));
 				}
 				//if more production can be madem
-				double extraSpending = 0;
-				while (canSupport(income - timeState.getSpending() - extraSpending, nameOfUnit)) {
+				double extraMineralSpending = 0;
+				double extraGasSpending = 0;
+				while (canSupportMins(income - timeState.getMineralSpending() - extraMineralSpending, nameOfUnit) 
+						&& canSupportGas(gasIncome - timeState.getGasSpending() - extraGasSpending, nameOfUnit)) {
 					numberOfBuildings++;
 					buildTime+= Datasheet.getBuildTime(Datasheet.getBuiltFrom(nameOfUnit));
-					buildCost+= Datasheet.getMineralCost(Datasheet.getBuiltFrom(nameOfUnit));
-					extraSpending += Datasheet.getMineralCost(nameOfUnit)/(1.0*Datasheet.getBuildTime(nameOfUnit));
+					mineralCost+= Datasheet.getMineralCost(Datasheet.getBuiltFrom(nameOfUnit));
+					gasCost+= Datasheet.getGasCost(nameOfUnit);
+					extraMineralSpending += Datasheet.getMineralCost(nameOfUnit)/(1.0*Datasheet.getBuildTime(nameOfUnit));
+					extraGasSpending += Datasheet.getGasCost(nameOfUnit)/(1.0*Datasheet.getBuildTime(nameOfUnit));
 					//System.out.println("PLS SUPPORT "+numberOfBuildings+" "+Datasheet.getBuiltFrom(nameOfUnit));
 				}
 				buildTime+= Datasheet.getBuildTime(nameOfUnit)*unitGoal.getValue()/(1.0*numberOfBuildings);
-				buildCost+= Datasheet.getMineralCost(nameOfUnit)*unitGoal.getValue();
+				mineralCost+= Datasheet.getMineralCost(nameOfUnit)*unitGoal.getValue();
+				gasCost+= Datasheet.getGasCost(nameOfUnit)*unitGoal.getValue();
 				
 			}
 		}
-		double incomeNeeded = (1.0*buildCost)/buildTime;
+		double incomeNeeded = (1.0*mineralCost)/buildTime;
+		double gasIncomeNeeded = (1.0*gasCost)/buildTime;
 	//	System.out.println("income needed "+incomeNeeded+" income "+income);
-		return (incomeNeeded > income);
+		return (incomeNeeded > income || gasIncomeNeeded > gasIncome);
 		
 		//return buildTime;
 	}
