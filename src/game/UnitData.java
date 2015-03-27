@@ -1,7 +1,5 @@
 package game;
 
-import gameobjects.Entity;
-
 public class UnitData {
 	String name;
 	String dependancy;

@@ -1,18 +1,14 @@
 package game;
 
-import gameobjects.Entity;
-
 import java.util.ArrayList;
-
-import units.buildings.*;
-import units.gateway.Zealot;
-import units.nexus.Probe;
 
 public class Datasheet {
 
 	public static final int MAX_SUPPLY = 200;
 	public static final double MINS_PER_NEXUS = 9000;
 	public static final double GAS_PER_NEXUS = 5000;
+	
+	public static final int MAX_PROBES_PER_NEXUS = 24;
 	
 	public static final double MINS_PER_MINUTE = 41, THIRD_MINS_PER_MINUTE = 20;
 	public static final double MINS_PER_SECOND = MINS_PER_MINUTE/60.0;

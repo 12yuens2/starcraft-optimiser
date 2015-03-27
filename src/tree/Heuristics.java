@@ -2,7 +2,6 @@ package tree;
 
 import game.Datasheet;
 import game.UnitData;
-import gameobjects.Entity;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -20,10 +19,9 @@ public class Heuristics {
 	}
 
 	public static boolean moreProbes(TimeState timeState) {
-	//return true;
 	//		return (timeTaken(timeState.unitNumbers.get("Probe"), timeState) 
 	//			> timeTaken(timeState.unitNumbers.get("Probe")+1, timeState));
-			return (timeTaken(timeState.unitNumbers.get("Probe"), timeState));
+			return (timeTaken(timeState.unitNumbers.get("Probe"), timeState.unitNumbers.get("Nexus"), timeState));
 	//		return true;
 	}
 	
@@ -35,14 +33,17 @@ public class Heuristics {
 		return (gasIncome > Datasheet.getGasCost(unitType)/Datasheet.getBuildTime(unitType));
 	}
 
-	private static boolean timeTaken(int numberOfProbes, TimeState timeState) {
-		double income = timeState.getMineralIncome(numberOfProbes - timeState.probesOnGas);
-		double gasIncome = timeState.getGasIncome(timeState.probesOnGas);
+	public static boolean timeTaken(int numberOfProbes, int numberOfNexi, TimeState timeState) {
+		int deltaNexi = numberOfNexi-timeState.unitNumbers.get("Nexus");
+		double income = timeState.getMineralIncome(numberOfProbes - timeState.probesOnGas, numberOfNexi);
+		double gasIncome = timeState.getGasIncome(timeState.probesOnGas+deltaNexi);
 		double buildTime = 0;
 		int mineralCost = 0;
 		int gasCost = 0;
 		HashSet<String> dependancies = new HashSet<>();
-		ArrayList<Entity> buildings = new ArrayList<>();
+		
+		buildTime += deltaNexi*Datasheet.getBuildTime("Nexus");
+		mineralCost += deltaNexi*Datasheet.getMineralCost("Nexus");
 		
 		for (Entry<String, Integer> unitGoal : timeState.getGoal().entrySet()) {
 			if (unitGoal.getValue()-timeState.unitNumbers.get(unitGoal.getKey())-timeState.getUnitNumberInBuildQueue(unitGoal.getKey()) > 0) {

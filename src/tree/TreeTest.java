@@ -23,8 +23,9 @@ public class TreeTest {
 		goal.put("Sentry", 2);
 		goal.put("Observer", 1);
 		goal.put("Carrier", 3);
+		//goal.put("Blink",1);
 		goal.put("Dark Templar", 2);
-		goal.put("Ground Armor 1", 1);
+		goal.put("Ground Armor 3", 1);
 		
 		while (numberOfTrials < MAX_NUMBER_OF_TRIALS){
 			TimeState gameTree = new TimeState(goal);	

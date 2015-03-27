@@ -12,8 +12,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Random;
 
-import units.buildings.Nexus;
-
 public class TimeState {
 	ArrayList<TimeState> futureStates;
 	
@@ -29,6 +27,7 @@ public class TimeState {
 	int supply;
 	int maxSupply;
 
+	StringBuilder buildOrder;
 	int time;
 	static int MAX_TIME;
 	
@@ -56,6 +55,7 @@ public class TimeState {
 		this.maxSupply = 10;
 		
 		this.probesOnGas = 0;
+		this.buildOrder = new StringBuilder();
 		
 		ArrayList<Operation> possibleOperations = getPossibleOperations();
 		Random generator = new Random();
@@ -76,6 +76,8 @@ public class TimeState {
 		this.supply = parent.supply;
 		this.maxSupply = parent.maxSupply;
 		this.probesOnGas = parent.probesOnGas;
+		
+		this.buildOrder = parent.buildOrder;
 		
 //		this.unitNumbers = parent.cloneUnitNumbers();
 		
@@ -100,6 +102,7 @@ public class TimeState {
 		
 		if (goalComplete){
 			System.out.println("Goal complete in " + time + " seconds.");
+			printBuildOrder();
 			printMe();
 			TimeState.MAX_TIME = time;
 		} else {	
@@ -119,8 +122,8 @@ public class TimeState {
 					}
 				}
 			} else {
-				System.out.println("Goal did not complete in "  + time + " seconds. Shortest time so far is " + time);
-				printMe();
+			//	System.out.println("Goal did not complete in "  + time + " seconds. Shortest time so far is " + time);
+			//	printMe();
 			//	System.out.println("\n\n\n");
 			}
 		}
@@ -143,41 +146,55 @@ public class TimeState {
 			ops.add(new Operation("assign", "minerals"));
 		}
 		
-		
 		//Building units and buildings
 		for (UnitData data : Datasheet.unitData){
-			if (minerals >= Datasheet.getMineralCost(data.getName()) && gas >= Datasheet.getGasCost(data.getName()) 
-					&& supply + getSupplyInBuildQueues() + Datasheet.getSupplyCost(data.getName()) <= maxSupply 
-					&& buildQueues.get(data.getBuiltFrom()).size() < unitNumbers.get(data.getBuiltFrom())) {
+			String unitName = data.getName();
+			
+			if (canBuild(unitName)) {
 				
-				if (isProbe(data.getName())){
+				if (UnitIs.Probe(unitName)){
 					if (Heuristics.moreProbes(this)){
-						ops.add(new Operation("build", data.getName()));			
+						ops.add(new Operation("build", unitName));
+						ops.add(new Operation("build", unitName));
+						ops.add(new Operation("build", unitName));
 					}
 				}
-				if (isAssimilator(data.getName()) && needsGas()){
+				if (UnitIs.Assimilator(unitName) && needsGas()){
 					if (hasFreeGeysers()) {
-						ops.add(new Operation("build", data.getName()));
+						ops.add(new Operation("build", unitName));
 					}
 				}
-				if (isPylon(data.getName())) {
+				if (UnitIs.Pylon(unitName)) {
 					if (needMoreSupply()) {
-						ops.add(new Operation("build", data.getName()));
+						ops.add(new Operation("build", unitName));
 					}
 				}
-				if (isUnit(data.getName())){
-					if (needsMoreForGoal(data.getName())){
-						ops.add(new Operation("build", data.getName()));
+				if (UnitIs.Nexus(unitName)) {
+					if (worthExpanding()) {
+						ops.add(new Operation("build", unitName));
 					}
 				}
-				if (isBuilder(data.getName())){
-					if (needsMoreFromBuilder(data.getName()) && canSupportFromBuilder(data.getName())){
+				if (UnitIs.Unit(unitName)){
+					if (needsMoreForGoal(unitName)){
+						ops.add(new Operation("build", unitName));
+					}
+				}
+				if (UnitIs.Builder(unitName)){
+					if (needsMoreFromBuilder(unitName) && canSupportFromBuilder(unitName)){
 						// checking for support
-						ops.add(new Operation("build", data.getName()));						
+						ops.add(new Operation("build", unitName));						
 					}
 				}
-				if (isUpgrade(data.getName())) {
-					ops.add(new Operation("build", data.getName()));
+				if (UnitIs.Dependancy(unitName)){
+					if (needsDependancy(unitName)){
+						ops.add(new Operation("build", unitName));												
+					}
+				}
+				
+				if (UnitIs.Upgrade(unitName)) {
+					if (getTotalNumber(unitName) < 1 && needsMoreForGoal(unitName)) {
+						ops.add(new Operation("build", unitName));
+					}
 				}
 				//nexus for expansion
 
@@ -191,10 +208,9 @@ public class TimeState {
 		
 		return ops;
 	}
-	
 
 	private boolean hasFreeGeysers() {
-		return (unitNumbers.get("Nexus")*2 > unitNumbers.get("Assimilator"));
+		return (unitNumbers.get("Nexus")*2 > getTotalNumber("Assimilator"));
 	}
 	
 	private boolean canSupportFromBuilder(String name) {
@@ -245,6 +261,8 @@ public class TimeState {
 		case "build":
 			for (UnitData data : Datasheet.unitData) {
 				if (op.getNoun().equals(data.getName())){
+					buildOrder.append(getTimeStamp() + " " + data.getName() + " " + supply + "/" + maxSupply + "\n");
+					supplyBlocked();
 					this.minerals -= Datasheet.getMineralCost(op.getNoun());
 					this.gas -= Datasheet.getGasCost(op.getNoun());
 					this.buildQueues.get(Datasheet.getBuiltFrom(op.getNoun())).add(new Build(op.getNoun()));
@@ -265,7 +283,32 @@ public class TimeState {
 	}
 	
 	private boolean needMoreSupply() {
-		return (maxSupply < getSupplyOfGoal()+unitNumbers.get("Probe"));
+		if (maxSupply < supply - 3 || willBeSupplyBlocked()) {
+			if (maxSupply < getSupplyOfGoal()+unitNumbers.get("Probe")) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	private boolean willBeSupplyBlocked() {
+		int tempSupply = supply;
+		for (Entry<String, Integer> entry : goal.entrySet()) {
+			if (canBuild(entry.getKey())) {
+				tempSupply += Datasheet.getSupplyCost(entry.getKey());
+			}
+		}
+		return (tempSupply + 1 >= getFutureMaxSupply());
+	}
+	
+	private void supplyBlocked() {
+		if (supply == maxSupply) {
+			buildOrder.append("Supply blocked :( \n");
+		}
+	}
+	
+	private int getFutureMaxSupply() {
+		return (getTotalNumber("Pylon")*8) + (getTotalNumber("Nexus")*10);
 	}
 	
 	private int getSupplyOfGoal() {
@@ -286,6 +329,7 @@ public class TimeState {
 		}
 		this.maxSupply = Math.min(maxSupply, Datasheet.MAX_SUPPLY);
 	}
+	
 	private void printMe(){
 		System.out.print("At time " + time + " we have: ");
 		System.out.print(minerals + " minerals ," + gas + " gas ," + supply + "/" + maxSupply + " : ");
@@ -310,29 +354,33 @@ public class TimeState {
 	}
 	
 	
-	public double getMineralIncome(){
-		return getMineralIncome(unitNumbers.get("Probe"));
+	private void printBuildOrder() {
+		System.out.println(buildOrder.toString());
 	}
 	
-	public double getMineralIncome(int probes) {
+	
+	public double getMineralIncome(){
+		return getMineralIncome(unitNumbers.get("Probe"), unitNumbers.get("Nexus"));
+	}
+
+	public double getMineralIncome(int probes, int numberOfNexi) {
 		double income = 0;
 		
-		int numberOfNexi = unitNumbers.get("Nexus");
-
 		int numberOfProbes = probes - this.probesOnGas;
-		
-		int bunchesOfSixteen = numberOfProbes/16;
+		numberOfProbes = Math.min(numberOfProbes, numberOfNexi*Datasheet.MAX_PROBES_PER_NEXUS);
+				
+		int efficientProbeBunches = numberOfProbes/16;
 		int remainder = numberOfProbes%16;
-		if (bunchesOfSixteen == numberOfNexi){
-			income = bunchesOfSixteen*16*Nexus.PROBE_MINING_PER_SECOND 
-					+ remainder*Nexus.THIRD_PROBE_MINING_PER_SECOND;
-		} else if (bunchesOfSixteen < numberOfNexi){
-			income = bunchesOfSixteen*16*Nexus.PROBE_MINING_PER_SECOND 
-					+ remainder*Nexus.PROBE_MINING_PER_SECOND;
-		} else if (bunchesOfSixteen > numberOfNexi){
-			income = numberOfNexi*16*Nexus.PROBE_MINING_PER_SECOND 
-					+ (bunchesOfSixteen - numberOfNexi)*16*Nexus.THIRD_PROBE_MINING_PER_SECOND 
-					+ remainder*Nexus.THIRD_PROBE_MINING_PER_SECOND;
+		if (efficientProbeBunches == numberOfNexi){
+			income = efficientProbeBunches*16*Datasheet.MINS_PER_SECOND
+					+ remainder*Datasheet.THIRD_MINS_PER_SECOND;
+		} else if (efficientProbeBunches < numberOfNexi){
+			income = efficientProbeBunches*16*Datasheet.MINS_PER_SECOND 
+					+ remainder*Datasheet.MINS_PER_SECOND;
+		} else if (efficientProbeBunches > numberOfNexi){
+			income = numberOfNexi*16*Datasheet.MINS_PER_SECOND 
+					+ (efficientProbeBunches - numberOfNexi)*16*Datasheet.THIRD_MINS_PER_SECOND
+					+ remainder*Datasheet.THIRD_MINS_PER_SECOND;
 		}
 		return income;
 	}
@@ -395,17 +443,27 @@ public class TimeState {
 		return unitNumbers.get(unitType) + getUnitNumberInBuildQueue(unitType);
 	}
 	
+	public String getTimeStamp() {
+		int mins = time/60;
+		int secs = time%60;
+		return ( mins < 10 ? "0" + mins : mins ) + ":" + ( secs < 10 ? "0" + secs : secs);
+	}
+	
 	public boolean needsMoreForGoal(String unitName){
 		return (goal.containsKey(unitName) && getTotalNumber(unitName) < goal.get(unitName));
 	}
 
 	public boolean needsDependancy(String dependancyName){
-		if (unitNumbers.get(dependancyName) > 0){
+		if (getTotalNumber(dependancyName) > 0){
 			return false;
 		}
 		for (Entry<String, Integer> entry: goal.entrySet()){
-			if (Datasheet.getDependancy(entry.getKey()).equals(dependancyName) && needsMoreForGoal(entry.getKey())){
-				return true;
+			String dependancy = Datasheet.getDependancy(entry.getKey());
+			while (dependancy != null){
+				if (dependancy.equals(dependancyName) && needsMoreForGoal(entry.getKey())){
+					return true;
+				}
+				dependancy = Datasheet.getDependancy(dependancy);
 			}
 		}
 		return false;		
@@ -438,68 +496,26 @@ public class TimeState {
 		return (gasCost > gas);
 	}
 	
-	public boolean isProbe(String unitName){
-		return unitName.equals("Probe");
-	}
-
-	public boolean isAssimilator(String unitName){
-		return unitName.equals("Assimilator");
-	}
-	public boolean isPylon(String unitName) {
-		return unitName.equals("Pylon");
-	}
-	
 	public boolean canBuild(String unitName){
 		String dependancy = Datasheet.getDependancy(unitName);
 		String builtFrom = Datasheet.getBuiltFrom(unitName);
-		if (unitNumbers.get(dependancy) > 0 && buildQueues.get(builtFrom).size() < unitNumbers.get(builtFrom)){
-			if (minerals >= Datasheet.getMineralCost(unitName)){
-				return true;				
+		if (dependancy == null || unitNumbers.get(dependancy) > 0){
+			if( buildQueues.get(builtFrom).size() < unitNumbers.get(builtFrom)){
+				if(minerals >= Datasheet.getMineralCost(unitName) && gas >= Datasheet.getGasCost(unitName)){
+					if (supply + getSupplyInBuildQueues() + Datasheet.getSupplyCost(unitName) <= maxSupply){
+						return true;
+					}
+				}
 			}
 		}
 		return false;
 	}
-	
-	public boolean isUnit(String unitName){
-		return (
-				unitName.equals("Probe") || unitName.equals("Zealot") || unitName.equals("Stalker") ||
-				unitName.equals("Observer") || unitName.equals("Sentry") || unitName.equals("High Templar") ||
-				unitName.equals("Immortal") || unitName.equals("Phoenix") || unitName.equals("Void Ray") ||
-				unitName.equals("Oracle") || unitName.equals("Warp Prism") || unitName.equals("Colossus") ||
-				unitName.equals("Tempest") || unitName.equals("Dark Templar") || unitName.equals("Archon") ||
-				unitName.equals("Carrier") || unitName.equals("Interceptor") || unitName.equals("Mothership Core") ||
-				unitName.equals("Mothership")
-				);
+
+	private boolean worthExpanding() {
+		boolean b = Heuristics.timeTaken(unitNumbers.get("Probe"), unitNumbers.get("Nexus"), this);
+		//System.out.println(b);
+		return b;
 	}
 	
-	public boolean isBuilder(String unitName){
-		return (
-				unitName.equals("Nexus") || unitName.equals("Gateway") || unitName.equals("Robotics Facility") ||
-				unitName.equals("Stargate") || unitName.equals("Mothership Core") || unitName.equals("High Templar") ||
-				unitName.equals("Probe") || unitName.equals("Carrier")
-		);
-	}
-	
-	public boolean isUpgrade(String unitName){
-		return (
-				unitName.equals("Warp Gate") || unitName.equals("Ground Weapons 1") || unitName.equals("Ground Weapons 2") ||
-				unitName.equals("Ground Weapons 3") || unitName.equals("Ground Armor 1") || unitName.equals("Ground Armor 2") ||
-				unitName.equals("Ground Armor 3") || unitName.equals("Shields 1") || unitName.equals("Shields 2") ||
-				unitName.equals("Shields 3") || unitName.equals("Air Weapons 1") || unitName.equals("Air Weapons 2") ||
-				unitName.equals("Air Weapons 3") || unitName.equals("Air Armor 1") || unitName.equals("Air Armor 2") ||
-				unitName.equals("Air Armor 3") || unitName.equals("Charge") || unitName.equals("Gravitic Boosters") ||
-				unitName.equals("Gravitic Drive") || unitName.equals("Anion Pulse-Crystal") || unitName.equals("Extended Thermal Lance") ||
-				unitName.equals("Psionic Storm") || unitName.equals("Blink") || unitName.equals("Graviton Catapult")
-		);
-	}
-	
-	public boolean isDependancy(String unitName) {
-		return (
-			unitName.equals("Pylon") || unitName.equals("Gateway") || unitName.equals("Cybernetics Core") ||
-			unitName.equals("Twilight Council") || unitName.equals("Robotics Facility") ||
-			unitName.equals("Stargate") || unitName.equals("Forge") || unitName.equals("Robotics Bay") ||
-			unitName.equals("Fleet Beacon") || unitName.equals("Templar Archives") || unitName.equals("Dark Shrine")
-		);
-	}
 }
 
