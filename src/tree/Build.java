@@ -4,12 +4,12 @@ import game.Datasheet;
 
 public class Build {
 	String nameOfUnit;
-	int time;
+	double time;
 	double buildTime;
 
 	public Build(String nameOfUnit){
 		this.nameOfUnit = nameOfUnit;
-		this.time = 0;
+		this.time = 0.0;
 		this.buildTime = Datasheet.getBuildTime(nameOfUnit);
 	}
 	
@@ -17,7 +17,7 @@ public class Build {
 	 * Used when cloning.
 	 * @see Build#deepClone()
 	 */
-	public Build(String nameOfUnit, int time){
+	public Build(String nameOfUnit, double time){
 		this.nameOfUnit = nameOfUnit;
 		this.time = time;
 		this.buildTime = Datasheet.getBuildTime(nameOfUnit);
@@ -32,11 +32,15 @@ public class Build {
 		
 	}
 
-	public int getTime() {
+	public double getTime() {
 		return time;
 	}
 	
 	public double getBuildTime() {
 		return buildTime;
+	}
+
+	public void incrementChronoboost() {
+		this.time = this.time + 1.5;
 	}
 }

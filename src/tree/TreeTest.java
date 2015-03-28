@@ -17,15 +17,15 @@ public class TreeTest {
 		HashMap<String,Integer> goal = new HashMap<>();
 		Datasheet.init();
 
-		goal.put("Zealot", 8);
-		goal.put("Stalker", 10);
-		goal.put("Immortal", 1);
-		goal.put("Sentry", 2);
-		goal.put("Observer", 1);
-		goal.put("Carrier", 3);
+		goal.put("Zealot", 4);
+		//goal.put("Stalker", 1);
+		//goal.put("Immortal", 1);
+		//goal.put("Sentry", 2);
+		//goal.put("Observer", 1);
+		//goal.put("Carrier", 3);
 		//goal.put("Blink",1);
-		goal.put("Dark Templar", 2);
-		goal.put("Ground Armor 3", 1);
+		//goal.put("Dark Templar", 2);
+		//goal.put("Ground Armor 3", 1);
 		
 		while (numberOfTrials < MAX_NUMBER_OF_TRIALS){
 			TimeState gameTree = new TimeState(goal);	

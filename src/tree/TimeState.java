@@ -8,9 +8,12 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Random;
+
+import javafx.util.Pair;
 
 public class TimeState {
 	ArrayList<TimeState> futureStates;
@@ -20,6 +23,9 @@ public class TimeState {
 	private HashMap<String,Integer> goal;
 	HashMap<String,Integer> unitNumbers;
 	
+	ArrayList<Chronoboost> nexusChronoboosts;
+	ArrayList<Double> nexusEnergy;
+	
 	int probesOnGas;
 	
 	double minerals;
@@ -27,6 +33,7 @@ public class TimeState {
 	int supply;
 	int maxSupply;
 
+	
 	StringBuilder buildOrder;
 	int time;
 	static int MAX_TIME;
@@ -40,6 +47,9 @@ public class TimeState {
 		
 		unitNumbers = new HashMap<>();
 		buildQueues = new HashMap<>();
+		nexusEnergy = new ArrayList<>();
+		nexusEnergy.add(new Double(0.0));
+		nexusChronoboosts = new ArrayList<>();
 		
 		for (UnitData data : Datasheet.unitData) {
 			unitNumbers.put(data.getName(), 0);
@@ -79,6 +89,9 @@ public class TimeState {
 		
 		this.buildOrder = parent.buildOrder;
 		
+		this.nexusChronoboosts = parent.nexusChronoboosts;
+		this.nexusEnergy = parent.nexusEnergy;
+		
 //		this.unitNumbers = parent.cloneUnitNumbers();
 		
 //		this.buildQueues = parent.cloneBuildQueues();
@@ -87,6 +100,7 @@ public class TimeState {
 		
 		this.unitNumbers = parent.unitNumbers;
 		this.buildQueues = parent.buildQueues;
+		this.nexusEnergy = parent.nexusEnergy;
 		this.goal = parent.goal;
 		
 		this.executeOperation(operation);
@@ -104,7 +118,7 @@ public class TimeState {
 			System.out.println("Goal complete in " + time + " seconds.");
 			printBuildOrder();
 			printMe();
-			TimeState.MAX_TIME = time;
+			TimeState.MAX_TIME = time - 1;
 		} else {	
 			//printMe(operation);
 			//System.out.println("\t--\t--\t--\t--");
@@ -145,6 +159,17 @@ public class TimeState {
 		} else if (probesOnGas > 0){
 			ops.add(new Operation("assign", "minerals"));
 		}
+		for (Double energy: nexusEnergy){
+			if (energy >= 25.0){
+				for (Entry<String,ArrayList<Build>> entry : buildQueues.entrySet()){
+					for (Build build : entry.getValue()){
+						if (UnitIs.Unit(build.nameOfUnit) && (build.buildTime - build.time > 30.0)){
+							ops.add(new Operation("chronoboost", build.nameOfUnit));
+						}
+					}
+				}
+			}			
+		}
 		
 		//Building units and buildings
 		for (UnitData data : Datasheet.unitData){
@@ -154,9 +179,11 @@ public class TimeState {
 				
 				if (UnitIs.Probe(unitName)){
 					if (Heuristics.moreProbes(this)){
-						ops.add(new Operation("build", unitName));
-						ops.add(new Operation("build", unitName));
-						ops.add(new Operation("build", unitName));
+						for (int i = 0; i <= unitNumbers.get("Nexus");i++){
+							ops.add(new Operation("build", unitName));
+							ops.add(new Operation("build", unitName));
+							ops.add(new Operation("build", unitName));							
+						}
 					}
 				}
 				if (UnitIs.Assimilator(unitName) && needsGas()){
@@ -217,7 +244,7 @@ public class TimeState {
 
 		double excessMinerals = getMineralIncome() - getMineralSpending();
 		double excessGas = getGasIncome() - getGasSpending();
-		
+				
 		for (Entry<String,Integer> entry : goal.entrySet()){
 
 			double mineralRateCost = Datasheet.getMineralCost(entry.getKey())/(1.0*Datasheet.getBuildTime(entry.getKey()));
@@ -237,17 +264,37 @@ public class TimeState {
 		//pass time first
 		this.minerals += getMineralIncome();
 		this.gas += getGasIncome();
+		for (int i = 0; i < nexusEnergy.size(); i++){
+			nexusEnergy.set(i, nexusEnergy.get(i) + 1);
+		}
+		for (Iterator<Chronoboost> iterator = nexusChronoboosts.iterator(); iterator.hasNext();){
+			Chronoboost chronoboost = iterator.next();
+			chronoboost.incrementTime();
+			chronoboost.setUnused();
+		}
 		//System.out.println(time + ": Operation: " + op.getVerb() + " " + op.getNoun());
-
+		
 		//Increment all build orders.
 		for (ArrayList<Build> buildQueue : buildQueues.values()){
 			for (Iterator<Build> iterator = buildQueue.iterator(); iterator.hasNext();){
 			    Build build = iterator.next();
-				build.increment();
+				boolean foundChrono = false;
+			    for (Chronoboost chronoboost : nexusChronoboosts){
+					if (chronoboost.getName().equals(build.nameOfUnit)){
+						foundChrono = true;
+						build.incrementChronoboost();
+					}
+				}
+			    if (!foundChrono){
+				    build.increment();			    	
+			    }
 				//System.out.println("Building " + build.nameOfUnit + " " + build.time + "/" + build.buildTime);
 				if (build.getTime() >= build.getBuildTime()){
 					unitNumbers.replace(build.nameOfUnit, unitNumbers.get(build.nameOfUnit) + 1);
-					addSupply(build.nameOfUnit);
+					if (build.nameOfUnit.equals("Nexus")){
+						nexusEnergy.add(new Double(0.0));
+					}
+					addToMaxSupply(build.nameOfUnit);
 					iterator.remove();
 				}
 			}
@@ -266,18 +313,31 @@ public class TimeState {
 					this.minerals -= Datasheet.getMineralCost(op.getNoun());
 					this.gas -= Datasheet.getGasCost(op.getNoun());
 					this.buildQueues.get(Datasheet.getBuiltFrom(op.getNoun())).add(new Build(op.getNoun()));
+					addToSupply(op.getNoun());
 				}
 			}
 			break;
 		case "assign":
 			switch (op.getNoun()) {
 			case "minerals":
+				//buildOrder.append(getTimeStamp() + " " + "Assign a Probe to minerals. \n");
 				probesOnGas--;
 				break;
 			case "gas":
+				//buildOrder.append(getTimeStamp() + " " + "Assign a Probe to gas. \n");
 				probesOnGas++;
 				break;
 			}
+			break;
+		case "chronoboost":
+			nexusChronoboosts.add(new Chronoboost(op.getNoun()));
+			for (int i = 0; i < nexusEnergy.size(); i++){
+				if (nexusEnergy.get(i) >= 25.0){
+					nexusEnergy.set(i, nexusEnergy.get(i) - 25);
+					break;
+				}
+			}
+			buildOrder.append(getTimeStamp() + " Chronoboost " + op.getNoun() + " " + supply + "/" + maxSupply + "\n");
 			break;
 		}
 	}
@@ -319,15 +379,17 @@ public class TimeState {
 		return supply;
 	}
 	
-	private void addSupply(String nameOfUnit) {
+	private void addToMaxSupply(String nameOfUnit) {
 		if (nameOfUnit.equals("Nexus")){
 			this.maxSupply += 10;
 		} else if (nameOfUnit.equals("Pylon")){
 			this.maxSupply += 8;
-		} else {
-			this.supply += Datasheet.getSupplyCost(nameOfUnit);
 		}
 		this.maxSupply = Math.min(maxSupply, Datasheet.MAX_SUPPLY);
+	}
+	
+	private void addToSupply(String nameOfUnit) {
+		this.supply += Datasheet.getSupplyCost(nameOfUnit);
 	}
 	
 	private void printMe(){
@@ -382,6 +444,7 @@ public class TimeState {
 					+ (efficientProbeBunches - numberOfNexi)*16*Datasheet.THIRD_MINS_PER_SECOND
 					+ remainder*Datasheet.THIRD_MINS_PER_SECOND;
 		}
+		//System.out.println(numberOfNexi + " Nexi with  " + numberOfProbes + " probes gives " + income + " income");
 		return income;
 	}
 	
@@ -394,13 +457,16 @@ public class TimeState {
 	}
 	
 	public double getMineralSpending() {
-		int spending = 0;
+		double spending = 0;
 		Iterator it = this.buildQueues.entrySet().iterator();
 	    while (it.hasNext()) {
-	        Entry<String, ArrayList<Build>> pair = (Map.Entry<String,ArrayList<Build>>)it.next();
+	    	Entry<String, ArrayList<Build>> pair = (Map.Entry<String,ArrayList<Build>>)it.next();
 	        String unitType = pair.getKey();
-	        spending += pair.getValue().size()*Datasheet.getMineralCost(unitType)/Datasheet.getBuildTime(unitType);
-	        
+	        for (Build b : pair.getValue()){
+	    	    if (UnitIs.Unit(b.nameOfUnit)){
+		        	spending += Datasheet.getMineralCost(b.nameOfUnit)/Datasheet.getBuildTime(b.nameOfUnit);	    	    	
+	    	    }
+	        }	        
 	    }
 		return spending;
 	}
@@ -440,7 +506,7 @@ public class TimeState {
 	}
 	
 	public int getTotalNumber(String unitType){
-		return unitNumbers.get(unitType) + getUnitNumberInBuildQueue(unitType);
+		return 0+unitNumbers.get(unitType) + getUnitNumberInBuildQueue(unitType);
 	}
 	
 	public String getTimeStamp() {
@@ -459,6 +525,14 @@ public class TimeState {
 		}
 		for (Entry<String, Integer> entry: goal.entrySet()){
 			String dependancy = Datasheet.getDependancy(entry.getKey());
+			while (dependancy != null){
+				if (dependancy.equals(dependancyName) && needsMoreForGoal(entry.getKey())){
+					return true;
+				}
+				dependancy = Datasheet.getDependancy(dependancy);
+			}
+			String builtFrom = Datasheet.getBuiltFrom(entry.getKey());
+			dependancy = Datasheet.getDependancy(builtFrom);
 			while (dependancy != null){
 				if (dependancy.equals(dependancyName) && needsMoreForGoal(entry.getKey())){
 					return true;
@@ -512,7 +586,7 @@ public class TimeState {
 	}
 
 	private boolean worthExpanding() {
-		boolean b = Heuristics.timeTaken(unitNumbers.get("Probe"), unitNumbers.get("Nexus"), this);
+		boolean b = Heuristics.timeTaken(unitNumbers.get("Probe"), getTotalNumber("Nexus"), this);
 		//System.out.println(b);
 		return b;
 	}

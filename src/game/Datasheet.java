@@ -5,8 +5,8 @@ import java.util.ArrayList;
 public class Datasheet {
 
 	public static final int MAX_SUPPLY = 200;
-	public static final double MINS_PER_NEXUS = 9000;
-	public static final double GAS_PER_NEXUS = 5000;
+	public static final double MINS_PER_NEXUS = 9000, GAS_PER_NEXUS = 5000;
+	public static final double MAX_ENERGY_IN_NEXUS = 100;
 	
 	public static final int MAX_PROBES_PER_NEXUS = 24;
 	
