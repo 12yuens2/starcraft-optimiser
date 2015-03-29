@@ -1,6 +1,7 @@
 package game;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public class Datasheet {
 
@@ -17,12 +18,21 @@ public class Datasheet {
 	public static final double GAS_PER_MINUTE = 38;
 	public static final double GAS_PER_SECOND = GAS_PER_MINUTE/60.0;
 	
+	public static final double CHRONOBOOST_DURATION = 20;
+	
+	public static final double WARPGATE_TRANFORMATION_TIME = 10;
+	public static final double WARPIN_TIME = 5;
+	
+	//cannot expand to more than 15 bases as there are not that many bases on the map
+	public static final int MAX_NUMBER_OF_NEXI = 15;
 	
 	public static ArrayList<UnitData> unitData;
 	
+	public static HashMap<String, Double> warpgateCooldown;
 	
 	public static void init(){
 		unitData = new ArrayList<>();
+		warpgateCooldown = new HashMap<>();
 
 		//Buildings
 		unitData.add(new UnitData("Nexus", null,"Probe", 400, 0, 0, 100));
@@ -57,7 +67,14 @@ public class Datasheet {
 		unitData.add(new UnitData("Carrier", "Fleet Beacon", "Stargate", 350, 250, 6, 120));
 		unitData.add(new UnitData("Mothership Core", "Cybernetics Core", "Nexus", 100, 100, 2, 30));
 		unitData.add(new UnitData("Mothership", "Fleet Beacon", "Mothership Core", 300, 300, 8, 100));
-
+		
+		//Warpgate cooldowns
+		warpgateCooldown.put("Zealot", 28.0);
+		warpgateCooldown.put("Stalker", 32.0);
+		warpgateCooldown.put("Sentry", 32.0);
+		warpgateCooldown.put("High Templar", 45.0);
+		warpgateCooldown.put("Dark Templar", 45.0);
+		
 		//Upgrades
 		unitData.add(new UnitData("Warp Gate", null, "Cybernetics Core", 50, 50, 0, 160));
 		unitData.add(new UnitData("Ground Weapons 1", null, "Forge", 100, 100, 0, 160));
@@ -84,6 +101,10 @@ public class Datasheet {
 		unitData.add(new UnitData("Blink", null,"Twilight Council", 150, 150, 0, 170));
 		unitData.add(new UnitData("Graviton Catapult", null,"Fleet Beacon", 150, 150, 0, 80));
 		
+	}
+	
+	public static double getWarpgateCooldown(String unitName){
+		return warpgateCooldown.get(unitName);
 	}
 	
 	public static double getMineralCost(String unitType){

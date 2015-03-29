@@ -19,7 +19,7 @@ public class Clone {
 		for (Entry<String,ArrayList<Build>> entry : buildQueues.entrySet()){
 			ArrayList<Build> newBuild = new ArrayList<>();
 			for (Build b : entry.getValue()){
-				newBuild.add(b.deepClone());
+			//	newBuild.add(b.deepClone());
 			}
 			newQueue.put(entry.getKey(), newBuild);
 		}

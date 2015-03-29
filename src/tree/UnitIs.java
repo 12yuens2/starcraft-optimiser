@@ -14,7 +14,11 @@ public class UnitIs {
 	}
 
 	public static boolean Nexus(String unitName) {
-		return (unitName.equals("Nexus"));
+		return unitName.equals("Nexus");
+	}
+	
+	public static boolean Gateway(String unitName) {
+		return unitName.equals("Gateway");
 	}
 	
 	public static boolean Unit(String unitName){
@@ -65,5 +69,63 @@ public class UnitIs {
 				unitName.equals("Air Armor 1") || unitName.equals("Air Armor 2") 
 		);
 	}
+	
+	public static boolean fromGateway(String unitName) {
+		return (
+				unitName.equals("Zealot") || unitName.equals("Stalker") || unitName.equals("Sentry") || 
+				unitName.equals("High Templar") || unitName.equals("Dark Templar")
+				);
+	}
 
+	public static boolean fromRoboticsFacility(String unitName) {
+		return (
+				unitName.equals("Observer") || unitName.equals("Immortal") || unitName.equals("Colossus") || unitName.equals("Warp Prism")
+				);
+	}
+	
+	public static boolean fromStargate(String unitName) {
+		return (
+				unitName.equals("Phoenix") || unitName.equals("Void Ray") || unitName.equals("Tempest") || unitName.equals("Carrier") ||
+				unitName.equals("Oracle")
+				);
+	}
+	
+	public static boolean fromForge(String unitName) {
+		return (
+				unitName.equals("Ground Armor 1") || unitName.equals("Ground Armor 2") || unitName.equals("Ground Armor 3") || 
+				unitName.equals("Ground Weapons 1") || unitName.equals("Ground Weapons 2") || unitName.equals("Ground Weapons 3") || 
+				unitName.equals("Shields 1") || unitName.equals("Shields 2") || unitName.equals("Shields 3")
+				);
+	}
+	
+	public static boolean fromCyberCore(String unitName) {
+		return (
+				unitName.equals("Warp Gate") || unitName.equals("Air Armor 1") || unitName.equals("Air Armor 2") || 
+				unitName.equals("Air Armor 3") || unitName.equals("Air Weapons 1") || unitName.equals("Air Weapons 2") || 
+				unitName.equals("Air Weapons 3")
+				);
+	}
+	
+	public static boolean fromTwilightCouncil(String unitName) {
+		return (
+				unitName.equals("Blink") || unitName.equals("Charge")
+				);
+	}
+	
+	public static boolean fromRoboticsBay(String unitName) {
+		return (
+				unitName.equals("Gravitic Boosters") || unitName.equals("Gravitic Drive") || 
+				unitName.equals("Extended Thermal Lance")
+				);
+	}
+	
+	public static boolean fromFleetBeacon(String unitName) {
+		return (
+				unitName.equals("Anion Pulse-Crystal") || unitName.equals("Graviton Catapult")
+				);
+	}
+	
+	public static boolean fromTemplarArchives(String unitName) {
+		return unitName.equals("Psionic Storm");
+	}
 }
