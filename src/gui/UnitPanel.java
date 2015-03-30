@@ -5,8 +5,13 @@ import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 import java.util.Random;
 
+import javax.imageio.ImageIO;
+import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
@@ -19,6 +24,9 @@ public class UnitPanel extends GoalPanel {
 	JLabel pic;
 	JLabel  name;
 	boolean hasError;
+	BufferedImage image;
+	
+	public static final String iconLocation = "img/";
 	
 	public UnitPanel(String unitName){
 		setLayout(new GridBagLayout());
@@ -26,13 +34,27 @@ public class UnitPanel extends GoalPanel {
 		GridBagConstraints c = new GridBagConstraints();
 		
 		c.fill = GridBagConstraints.BOTH;
-		
+				
 		this.unitName = unitName;
 		Random r = new Random();
 		this.c = new Color(r.nextInt(255), r.nextInt(255), r.nextInt(255));
+
+		
+		try {
+			System.out.println(unitName);
+			image = ImageIO.read(new File(iconLocation + unitName + ".jpeg" ));
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		
 		input = new JTextField();
-		pic = new JLabel("{{PICTURE HERE}}");		
+		pic = new JLabel(new ImageIcon(image));	
+		
+
+		
+		
+		
 		name = new JLabel(unitName);
 		
 		c.gridx =0;

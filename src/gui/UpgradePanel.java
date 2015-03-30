@@ -5,8 +5,13 @@ import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 import java.util.Random;
 
+import javax.imageio.ImageIO;
+import javax.swing.ImageIcon;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -20,6 +25,7 @@ public class UpgradePanel extends GoalPanel{
 	JLabel pic;
 	JLabel  name;
 	boolean hasError;
+	BufferedImage image;
 	
 	public UpgradePanel(String unitName) {
 		setLayout(new GridBagLayout());
@@ -32,8 +38,17 @@ public class UpgradePanel extends GoalPanel{
 		Random r = new Random();
 		this.c = new Color(r.nextInt(255), r.nextInt(255), r.nextInt(255));
 		
+		try {
+			System.out.println(unitName);
+			image = ImageIO.read(new File(UnitPanel.iconLocation + unitName + ".jpeg" ));
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		
 		getUpgrade = new JCheckBox();
-		pic = new JLabel("{{PICTURE HERE}}");		
+		pic = new JLabel(new ImageIcon(image));		
 		name = new JLabel(unitName);
 		
 		c.gridx =0;

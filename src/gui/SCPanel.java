@@ -16,6 +16,7 @@ import java.util.Map.Entry;
 
 import javax.swing.JButton;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JTextPane;
 
 import data.Datasheet;
@@ -32,6 +33,9 @@ public class SCPanel extends JPanel {
 	
 	ArrayList<GoalPanel> unitPanels;
 	JTextPane buildOutput;
+
+	JScrollPane scrollPane;
+	
 	JButton startButton, stopButton;
 	private boolean isStarted;
 	
@@ -61,6 +65,8 @@ public class SCPanel extends JPanel {
 		stopButton = new JButton("Stop");
 		stopButton.addActionListener(new StopButtonListener(this));
 		
+		scrollPane = new JScrollPane(buildOutput);
+		
 		isStarted = false;
 		
 		c.gridx = 0;
@@ -81,8 +87,10 @@ public class SCPanel extends JPanel {
 		c.gridx= UNIT_COLUMNS;
 		c.gridheight = UNIT_ROWS + 1;
 		c.gridy = 0;
-		add(buildOutput,c);
+		c.weightx = 3*DEFAULT_WEIGHT;
+		add(scrollPane,c);
 		
+		c.weightx = DEFAULT_WEIGHT;
 		c.gridy = UNIT_ROWS + 2;
 		c.gridheight = 1;
 		c.gridwidth = UNIT_COLUMNS;
