@@ -169,7 +169,7 @@ public class TimeState {
 					}
 				}
 			} else {
-				System.out.println("Goal did not complete in "  + time + " seconds. Shortest time so far is " + time);
+				//System.out.println("Goal did not complete in "  + time + " seconds. Shortest time so far is " + time);
 				//printMe();
 			//	System.out.println("\n\n\n");
 			}

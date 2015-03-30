@@ -5,6 +5,7 @@ import game.UnitIs;
 import game.tree.TimeState;
 
 import java.awt.Dimension;
+import java.awt.Graphics;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
@@ -86,6 +87,7 @@ public class SCPanel extends JPanel {
 		c.gridheight = 1;
 		c.gridwidth = UNIT_COLUMNS;
 		c.gridx= 0;
+		c.weighty = DEFAULT_WEIGHT/2;
 		add(startButton,c);
 		
 		c.gridx= UNIT_COLUMNS;
@@ -113,11 +115,19 @@ public class SCPanel extends JPanel {
 		}
 		this.gameThread = new GameThread(buildOutput, goal);
 		gameThread.start();
-		gameThread.run();
+
 	}
 	
 	public void stop(){
 		this.isStarted = false;
+		if (gameThread != null){
+			gameThread.askToStop();
+			try {
+				gameThread.join();
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
 	}
-	
 }
