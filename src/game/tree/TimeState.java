@@ -5,11 +5,8 @@ import game.Heuristics;
 import game.UnitIs;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Random;
@@ -18,7 +15,6 @@ import javax.swing.JTextPane;
 
 import data.Datasheet;
 import data.UnitData;
-import javafx.util.Pair;
 
 public class TimeState {
 	ArrayList<TimeState> futureStates;
@@ -206,7 +202,7 @@ public class TimeState {
 		
 		//Chronoboost
 		for (Double energy: nexusEnergy){
-			if (energy >= 25.0){
+			if (energy >= Chronoboost.COST){
 				for (Entry<String,BuildOrders> entry : buildQueues.entrySet()){
 					for (Build build : entry.getValue()){
 						if (UnitIs.Unit(build.nameOfUnit) && !build.isChronoboosted){
@@ -380,8 +376,8 @@ public class TimeState {
 			}
 			for (int i = 0; i < nexusEnergy.size(); i++){
 				//System.out.println("At " + getTimeStamp() + " nexus has " + nexusEnergy.get(i) + "energy");
-				if (nexusEnergy.get(i) >= 25.0){
-					nexusEnergy.set(i, nexusEnergy.get(i) - 25);
+				if (nexusEnergy.get(i) >= Chronoboost.COST){
+					nexusEnergy.set(i, nexusEnergy.get(i) - Chronoboost.COST);
 					//System.out.println("Reducing nexus energy");
 					break;
 				}
@@ -431,17 +427,17 @@ public class TimeState {
 		int numberOfProbes = probes - this.probesOnGas;
 		numberOfProbes = Math.min(numberOfProbes, numberOfNexi*Datasheet.MAX_PROBES_PER_NEXUS);
 				
-		int efficientProbeBunches = numberOfProbes/16;
-		int remainder = numberOfProbes%16;
+		int efficientProbeBunches = numberOfProbes/Datasheet.EFFICIENT_PROBES;
+		int remainder = numberOfProbes%Datasheet.EFFICIENT_PROBES;
 		if (efficientProbeBunches == numberOfNexi){
-			income = efficientProbeBunches*16*Datasheet.MINS_PER_SECOND
+			income = efficientProbeBunches*Datasheet.EFFICIENT_PROBES*Datasheet.MINS_PER_SECOND
 					+ remainder*Datasheet.THIRD_MINS_PER_SECOND;
 		} else if (efficientProbeBunches < numberOfNexi){
-			income = efficientProbeBunches*16*Datasheet.MINS_PER_SECOND 
+			income = efficientProbeBunches*Datasheet.EFFICIENT_PROBES*Datasheet.MINS_PER_SECOND 
 					+ remainder*Datasheet.MINS_PER_SECOND;
 		} else if (efficientProbeBunches > numberOfNexi){
-			income = numberOfNexi*16*Datasheet.MINS_PER_SECOND 
-					+ (efficientProbeBunches - numberOfNexi)*16*Datasheet.THIRD_MINS_PER_SECOND
+			income = numberOfNexi*Datasheet.EFFICIENT_PROBES*Datasheet.MINS_PER_SECOND 
+					+ (efficientProbeBunches - numberOfNexi)*Datasheet.EFFICIENT_PROBES*Datasheet.THIRD_MINS_PER_SECOND
 					+ remainder*Datasheet.THIRD_MINS_PER_SECOND;
 		}
 		//System.out.println(numberOfNexi + " Nexi with  " + numberOfProbes + " probes gives " + income + " income");
@@ -521,9 +517,9 @@ public class TimeState {
 	
 	private void addToMaxSupply(String nameOfUnit) {
 		if (nameOfUnit.equals("Nexus")){
-			this.maxSupply += 10;
+			this.maxSupply += Datasheet.NEXUS_SUPPLY;
 		} else if (nameOfUnit.equals("Pylon")){
-			this.maxSupply += 8;
+			this.maxSupply += Datasheet.PYLON_SUPPLY;
 		}
 		this.maxSupply = Math.min(maxSupply, Datasheet.MAX_SUPPLY);
 	}

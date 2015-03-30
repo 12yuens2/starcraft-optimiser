@@ -6,10 +6,13 @@ import java.util.HashMap;
 public class Datasheet {
 
 	public static final int MAX_SUPPLY = 200;
+	public static final int NEXUS_SUPPLY = 10;
+	public static final int PYLON_SUPPLY = 8;
 	public static final double MINS_PER_NEXUS = 9000, GAS_PER_NEXUS = 5000;
 	public static final double MAX_ENERGY_IN_NEXUS = 100;
 	
 	public static final int MAX_PROBES_PER_NEXUS = 24;
+	public static final int EFFICIENT_PROBES = 16;
 	
 	public static final double MINS_PER_MINUTE = 41, THIRD_MINS_PER_MINUTE = 20;
 	public static final double MINS_PER_SECOND = MINS_PER_MINUTE/60.0;

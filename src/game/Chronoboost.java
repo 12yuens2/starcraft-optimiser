@@ -2,6 +2,7 @@ package game;
 
 public class Chronoboost {
 	public static final int MAX_TIME = 20;
+	public static final double COST = 25.0;
 	
 	private String name;
 	private double time;
