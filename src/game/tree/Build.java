@@ -1,6 +1,6 @@
-package tree;
+package game.tree;
 
-import game.Datasheet;
+import data.Datasheet;
 
 public class Build {
 	String nameOfUnit;

@@ -1,4 +1,4 @@
-package tree;
+package game;
 
 public class Chronoboost {
 	public static final int MAX_TIME = 20;

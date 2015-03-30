@@ -1,4 +1,4 @@
-package tree;
+package game.tree;
 
 public class Operation {
 

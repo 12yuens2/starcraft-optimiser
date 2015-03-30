@@ -1,4 +1,6 @@
-package tree;
+package game;
+
+import game.tree.Build;
 
 import java.util.ArrayList;
 import java.util.HashMap;

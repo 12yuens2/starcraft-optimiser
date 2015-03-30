@@ -1,7 +1,8 @@
-package tree;
+package game.tree;
 
-import game.Datasheet;
-import game.UnitData;
+import game.Chronoboost;
+import game.Heuristics;
+import game.UnitIs;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -13,6 +14,10 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Random;
 
+import javax.swing.JTextPane;
+
+import data.Datasheet;
+import data.UnitData;
 import javafx.util.Pair;
 
 public class TimeState {
@@ -38,16 +43,20 @@ public class TimeState {
 	
 	StringBuilder buildOrder;
 	int time;
-	static int MAX_TIME;
+	public static int MAX_TIME;
 	
 	HashMap<String,BuildOrders> buildQueues;
 	
 	ArrayList<Integer> gatewayTransformations;
 	int numberOfWarpgates;
 	
+	JTextPane output;
+	
 	//initial conditions
-	public TimeState(HashMap<String,Integer> goal){
+	public TimeState(JTextPane output, HashMap<String,Integer> goal){
 		this.goal = goal;
+		this.output = output;
+		
 		futureStates = new ArrayList<TimeState>();
 		
 		unitNumbers = new HashMap<>();
@@ -67,10 +76,7 @@ public class TimeState {
 		
 		
 		//ALWAYS RESERACH WARP GATE
-		this.goal.put("Warp Gate", 1);
-
-		
-		
+		//this.goal.put("Warp Gate", 1);
 		
 		unitNumbers.replace("Nexus", 1);
 		unitNumbers.replace("Probe", 6);
@@ -112,6 +118,8 @@ public class TimeState {
 		this.nexusChronoboosts = parent.nexusChronoboosts;
 		this.nexusEnergy = parent.nexusEnergy;
 		
+		this.output = parent.output;
+		
 		this.gatewayTransformations = parent.gatewayTransformations;
 		this.numberOfWarpgates = parent.numberOfWarpgates;
 //		this.unitNumbers = parent.cloneUnitNumbers();
@@ -137,7 +145,10 @@ public class TimeState {
 		
 		
 		if (goalComplete){
-			System.out.println("Goal complete in " + time + " seconds.");
+			buildOrder.append("Goal complete in " + getTimeStamp());
+			if (output != null){
+				output.setText(this.buildOrder.toString());				
+			}
 			printBuildOrder();
 			printMe();
 			TimeState.MAX_TIME = time - 1;
@@ -158,15 +169,11 @@ public class TimeState {
 					}
 				}
 			} else {
-				//System.out.println("Goal did not complete in "  + time + " seconds. Shortest time so far is " + time);
+				System.out.println("Goal did not complete in "  + time + " seconds. Shortest time so far is " + time);
 				//printMe();
 			//	System.out.println("\n\n\n");
 			}
 		}
-	}
-	
-	public HashMap<String, Integer> getGoal() {
-		return goal;
 	}
 		
 	private ArrayList<Operation> getPossibleOperations() {
@@ -176,7 +183,7 @@ public class TimeState {
 		ops.add(new Operation("wait", ""));
 		
 		//assigning workers
-		if (needMoreGas() && probesOnGas<unitNumbers.get("Assimilator")*3) {
+		if (Heuristics.needMoreGas(this) && probesOnGas<unitNumbers.get("Assimilator")*3) {
 			ops.add(new Operation("assign", "gas"));
 		} else if (probesOnGas > 0){
 			ops.add(new Operation("assign", "minerals"));
@@ -197,6 +204,7 @@ public class TimeState {
 			}
 		}
 		
+		//Chronoboost
 		for (Double energy: nexusEnergy){
 			if (energy >= 25.0){
 				for (Entry<String,BuildOrders> entry : buildQueues.entrySet()){
@@ -221,7 +229,7 @@ public class TimeState {
 		for (UnitData data : Datasheet.unitData){
 			String unitName = data.getName();
 			
-			if (canBuild(unitName)) {
+			if (Heuristics.canBuild(unitName, this)) {
 				
 				if (UnitIs.Probe(unitName)){
 					if (Heuristics.moreProbes(this)){
@@ -232,23 +240,23 @@ public class TimeState {
 						}
 					}
 				}
-				if (UnitIs.Assimilator(unitName) && needsGas()){
+				if (UnitIs.Assimilator(unitName) && Heuristics.needsGas(this)){
 					if (hasFreeGeysers()) {
 						ops.add(new Operation("build", unitName));
 					}
 				}
 				if (UnitIs.Pylon(unitName)) {
-					if (needMoreSupply()) {
+					if (Heuristics.needMoreSupply(this) || Heuristics.supplyBlocked(this)) {
 						ops.add(new Operation("build", unitName));
 					}
 				}
 				if (UnitIs.Nexus(unitName)) {
-					if (worthExpanding()) {
+					if (Heuristics.worthExpanding(this)) {
 						ops.add(new Operation("build", unitName));
 					}
 				}
 				if (UnitIs.Unit(unitName)){
-					if (needsMoreForGoal(unitName)){
+					if (Heuristics.needsMoreForGoal(unitName, this)){
 						if (UnitIs.fromGateway(unitName)) {
 							//get number of active warpgates
 							int numberOfActiveWarpgates = 0;
@@ -269,57 +277,28 @@ public class TimeState {
 					}		
 				}
 				if (UnitIs.Builder(unitName)){
-					if (needsMoreFromBuilder(unitName) && canSupportFromBuilder(unitName)){
+					if (Heuristics.needsMoreFromBuilder(unitName, this) && Heuristics.canSupportFromBuilder(unitName, this)){
 						// checking for support
 						ops.add(new Operation("build", unitName));						
 					}
 				}
 				if (UnitIs.Dependancy(unitName)){
-					if (needsDependancy(unitName)){
+					if (Heuristics.needsDependancy(unitName, this)){
 						ops.add(new Operation("build", unitName));												
 					}
 				}
 				
 				if (UnitIs.Upgrade(unitName)) {
-					if (getTotalNumber(unitName) < 1 && needsMoreForGoal(unitName)) {
+					if (getTotalNumber(unitName) < 1 && Heuristics.needsMoreForGoal(unitName, this)) {
 						ops.add(new Operation("build", unitName));
 					}
 				}
 				//nexus for expansion
 
 			}
-//			Heuristics.makeProductionBuildings(ops, data, this);
-//			ops.add(new Operation("build", data.getName()));
 		}
-		
-	//	Heuristics.moreProbes(ops, this);
-	//	Heuristics.expand(ops, this);
 		
 		return ops;
-	}
-
-	private boolean hasFreeGeysers() {
-		return (unitNumbers.get("Nexus")*2 > getTotalNumber("Assimilator"));
-	}
-	
-	private boolean canSupportFromBuilder(String name) {
-
-		double excessMinerals = getMineralIncome() - getMineralSpending();
-		double excessGas = getGasIncome() - getGasSpending();
-				
-		for (Entry<String,Integer> entry : goal.entrySet()){
-
-			double mineralRateCost = Datasheet.getMineralCost(entry.getKey())/(1.0*Datasheet.getBuildTime(entry.getKey()));
-			double gasRateCost = Datasheet.getGasCost(entry.getKey())/(1.0*Datasheet.getBuildTime(entry.getKey()));
-			
-			if (Datasheet.getBuiltFrom(entry.getKey()).equals(name)){
-				if (excessMinerals >= mineralRateCost && excessGas  >= gasRateCost){
-					return true;
-				}
-			}
-		}
-	
-		return false;
 	}
 	
 	private void executeOperation(Operation op) {
@@ -370,7 +349,6 @@ public class TimeState {
 			for (UnitData data : Datasheet.unitData) {
 				if (op.getNoun().equals(data.getName())){
 					buildOrder.append(getTimeStamp() + " " + data.getName() + " " + supply + "/" + maxSupply + "\n");
-					supplyBlocked();
 					this.minerals -= Datasheet.getMineralCost(op.getNoun());
 					this.gas -= Datasheet.getGasCost(op.getNoun());
 					this.buildQueues.get(Datasheet.getBuiltFrom(op.getNoun())).add(new Build(op.getNoun()));
@@ -418,7 +396,6 @@ public class TimeState {
 			break;
 		case "warp":
 			buildOrder.append(getTimeStamp() + " Warp in " + op.getNoun() + " " + supply + "/" + maxSupply + "\n");
-			supplyBlocked();
 			this.minerals -= Datasheet.getMineralCost(op.getNoun());
 			this.gas -= Datasheet.getGasCost(op.getNoun());
 			this.buildQueues.get("Gateway").add(new WarpgateBuild(op.getNoun()));
@@ -427,108 +404,22 @@ public class TimeState {
 			break;
 		}
 	}
-
 	
-	private boolean needMoreSupply() {
-		if (maxSupply < supply - 3 || willBeSupplyBlocked()) {
-			if (maxSupply < getSupplyOfGoal()+unitNumbers.get("Probe")) {
-				return true;
-			}
-		}
-		return false;
+	public HashMap<String, Integer> getGoal() {
+		return goal;
 	}
 	
-	private boolean willBeSupplyBlocked() {
-		int tempSupply = supply;
-		for (Entry<String, Integer> entry : goal.entrySet()) {
-			if (canBuild(entry.getKey())) {
-				tempSupply += Datasheet.getSupplyCost(entry.getKey());
-			}
-		}
-		return (tempSupply + 1 >= getFutureMaxSupply());
-	}
-	
-	private void supplyBlocked() {
-		if (supply == maxSupply) {
-			buildOrder.append("Supply blocked :( \n");
-		}
-	}
-	
-	private int getFutureMaxSupply() {
+	public int getFutureMaxSupply() {
 		return (getTotalNumber("Pylon")*8) + (getTotalNumber("Nexus")*10);
 	}
 	
-	private int getSupplyOfGoal() {
+	public int getSupplyOfGoal() {
 		int supply = 0;
 		for (Entry<String, Integer> entry : goal.entrySet()) {
 			supply+=Datasheet.getSupplyCost(entry.getKey())*entry.getValue();
 		}
 		return supply;
 	}
-	
-	private void addToMaxSupply(String nameOfUnit) {
-		if (nameOfUnit.equals("Nexus")){
-			this.maxSupply += 10;
-		} else if (nameOfUnit.equals("Pylon")){
-			this.maxSupply += 8;
-		}
-		this.maxSupply = Math.min(maxSupply, Datasheet.MAX_SUPPLY);
-	}
-	
-	private void addToSupply(String nameOfUnit) {
-		this.supply += Datasheet.getSupplyCost(nameOfUnit);
-	}
-	
-	private void addResources() {
-		double mineralsEarned = getMineralIncome();
-		if (mineralsEarned > this.totalMinerals) {
-			this.totalMinerals = 0;
-			this.minerals += this.totalMinerals;
-		} else {
-			this.totalMinerals -= mineralsEarned;
-			this.minerals += mineralsEarned;
-		}
-		
-		double gasEarned = getGasIncome();
-		if (gasEarned > this.totalGas) {
-			this.totalGas = 0;
-			this.gas += this.totalGas;
-		} else {
-			this.totalGas -= gasEarned;
-			this.gas += gasEarned;
-		}
-	}
-	
-	private void printMe(){
-		System.out.print("At time " + time + " we have: ");
-		System.out.print(minerals + " minerals ," + gas + " gas ," + supply + "/" + maxSupply + " : ");
-		for (Entry<String,Integer> entry: unitNumbers.entrySet()){
-			if (entry.getValue() > 0){
-				System.out.print(entry.getKey() + " : " + entry.getValue() + " , ");
-			}
-		}
-		System.out.print("Warp gates : " + numberOfWarpgates);
-		System.out.println();
-	}
-	
-	private void printMe(Operation op){
-		System.out.print("At time " + time + " we have: ");
-		System.out.print(minerals + " minerals ," + gas + " gas ," + supply + "/" + maxSupply + " : ");
-		for (Entry<String,Integer> entry: unitNumbers.entrySet()){
-			if (entry.getValue() > 0){
-				System.out.print(entry.getKey() + " : " + entry.getValue() + " , ");
-			}
-		}
-		System.out.print("Warp gates : " + numberOfWarpgates);
-		System.out.print(" Operation " + op.getNoun() + "  " + op.getVerb());
-		System.out.println();
-	}
-	
-	
-	private void printBuildOrder() {
-		System.out.println(buildOrder.toString());
-	}
-	
 	
 	public double getMineralIncome(){
 		return getMineralIncome(unitNumbers.get("Probe"), unitNumbers.get("Nexus"));
@@ -624,92 +515,108 @@ public class TimeState {
 		return ( mins < 10 ? "0" + mins : mins ) + ":" + ( secs < 10 ? "0" + secs : secs);
 	}
 	
-	public boolean needsMoreForGoal(String unitName){
-		return (goal.containsKey(unitName) && getTotalNumber(unitName) < goal.get(unitName));
-	}
-
-	public boolean needsDependancy(String dependancyName){
-		if (getTotalNumber(dependancyName) > 0){
-			return false;
-		}
-		for (Entry<String, Integer> entry: goal.entrySet()){
-			String dependancy = Datasheet.getDependancy(entry.getKey());
-			while (dependancy != null){
-				if (dependancy.equals(dependancyName) && needsMoreForGoal(entry.getKey())){
-					return true;
-				}
-				dependancy = Datasheet.getDependancy(dependancy);
-			}
-			String builtFrom = Datasheet.getBuiltFrom(entry.getKey());
-			dependancy = Datasheet.getDependancy(builtFrom);
-			while (dependancy != null){
-				if (dependancy.equals(dependancyName) && needsMoreForGoal(entry.getKey())){
-					return true;
-				}
-				dependancy = Datasheet.getDependancy(dependancy);
-			}
-		}
-		return false;		
+	private boolean hasFreeGeysers() {
+		return (unitNumbers.get("Nexus")*2 > getTotalNumber("Assimilator"));
 	}
 	
-	public boolean needsMoreFromBuilder(String builderName){
-		boolean b = false;
-		int numberOfUnits = 0;
-		for (Entry<String, Integer> entry: goal.entrySet()){
-			if (Datasheet.getBuiltFrom(entry.getKey()).equals(builderName)) {
-				numberOfUnits += entry.getValue()-getTotalNumber(entry.getKey());
-				if (needsMoreForGoal(entry.getKey())){
-					b = true;
-				}
-			}
+	private void addToMaxSupply(String nameOfUnit) {
+		if (nameOfUnit.equals("Nexus")){
+			this.maxSupply += 10;
+		} else if (nameOfUnit.equals("Pylon")){
+			this.maxSupply += 8;
+		}
+		this.maxSupply = Math.min(maxSupply, Datasheet.MAX_SUPPLY);
+	}
+	
+	private void addToSupply(String nameOfUnit) {
+		this.supply += Datasheet.getSupplyCost(nameOfUnit);
+	}
+	
+	private void addResources() {
+		double mineralsEarned = getMineralIncome();
+		if (mineralsEarned > this.totalMinerals) {
+			this.totalMinerals = 0;
+			this.minerals += this.totalMinerals;
+		} else {
+			this.totalMinerals -= mineralsEarned;
+			this.minerals += mineralsEarned;
 		}
 		
-		//don't make more production than number of units you need from that building
-		if (getTotalNumber(builderName) > numberOfUnits) {
-			b = false;
+		double gasEarned = getGasIncome();
+		if (gasEarned > this.totalGas) {
+			this.totalGas = 0;
+			this.gas += this.totalGas;
+		} else {
+			this.totalGas -= gasEarned;
+			this.gas += gasEarned;
 		}
-		return b;
 	}
 	
-	private boolean needsGas() {
-		for (Entry<String,Integer> entry : goal.entrySet()){
-			if (Datasheet.getGasCost(entry.getKey()) > 0){
-				return true;
+	private void printMe(){
+		System.out.print("At time " + time + " we have: ");
+		System.out.print(minerals + " minerals ," + gas + " gas ," + supply + "/" + maxSupply + " : ");
+		for (Entry<String,Integer> entry: unitNumbers.entrySet()){
+			if (entry.getValue() > 0){
+				System.out.print(entry.getKey() + " : " + entry.getValue() + " , ");
 			}
 		}
-		return false;
+		System.out.print("Warp gates : " + numberOfWarpgates);
+		System.out.println();
 	}
 	
-	private boolean needMoreGas() {
-		double gasCost = 0;
-		for (Entry<String,Integer> entry : goal.entrySet()){
-			gasCost += Datasheet.getGasCost(entry.getKey())*(entry.getValue()-unitNumbers.get(entry.getKey()));
-			
-		}
-		return (gasCost > gas);
-	}
-	
-	public boolean canBuild(String unitName){
-		String dependancy = Datasheet.getDependancy(unitName);
-		String builtFrom = Datasheet.getBuiltFrom(unitName);
-		if (dependancy == null || unitNumbers.get(dependancy) > 0){
-			if( buildQueues.get(builtFrom).size() < unitNumbers.get(builtFrom)){
-				if(minerals >= Datasheet.getMineralCost(unitName) && gas >= Datasheet.getGasCost(unitName)){
-					if (supply + getSupplyInBuildQueues() + Datasheet.getSupplyCost(unitName) <= maxSupply){
-						return true;
-					}
-				}
+	private void printMe(Operation op){
+		System.out.print("At time " + time + " we have: ");
+		System.out.print(minerals + " minerals ," + gas + " gas ," + supply + "/" + maxSupply + " : ");
+		for (Entry<String,Integer> entry: unitNumbers.entrySet()){
+			if (entry.getValue() > 0){
+				System.out.print(entry.getKey() + " : " + entry.getValue() + " , ");
 			}
 		}
-		return false;
-	}
-
-	private boolean worthExpanding() {
-		boolean b = getTotalNumber("Nexus") <= Datasheet.MAX_NUMBER_OF_NEXI 
-				&& Heuristics.timeTaken(unitNumbers.get("Probe"), getTotalNumber("Nexus"), this);
-		//System.out.println(b);
-		return b;
+		System.out.print("Warp gates : " + numberOfWarpgates);
+		System.out.print(" Operation " + op.getNoun() + "  " + op.getVerb());
+		System.out.println();
 	}
 	
+	private void printBuildOrder() {
+		System.out.println("PLS PRINT BUILD");
+		System.out.println(buildOrder.toString());
+	}
+	public HashMap<String, Integer> getUnitNumbers() {
+		return unitNumbers;
+	}
+	public ArrayList<Double> getNexusEnergy() {
+		return nexusEnergy;
+	}
+	public int getProbesOnGas() {
+		return probesOnGas;
+	}
+	public double getTotalMinerals() {
+		return totalMinerals;
+	}
+	public double getTotalGas() {
+		return totalGas;
+	}
+	public double getMinerals() {
+		return minerals;
+	}
+	public double getGas() {
+		return gas;
+	}
+	public int getSupply() {
+		return supply;
+	}
+	public int getMaxSupply() {
+		return maxSupply;
+	}
+	public StringBuilder getBuildOrder() {
+		return buildOrder;
+	}
+	public int getTime() {
+		return time;
+	}
+	public HashMap<String, BuildOrders> getBuildQueues() {
+		return buildQueues;
+	}
+		
 }
 

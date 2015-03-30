@@ -1,4 +1,4 @@
-package game;
+package data;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -67,6 +67,8 @@ public class Datasheet {
 		unitData.add(new UnitData("Carrier", "Fleet Beacon", "Stargate", 350, 250, 6, 120));
 		unitData.add(new UnitData("Mothership Core", "Cybernetics Core", "Nexus", 100, 100, 2, 30));
 		unitData.add(new UnitData("Mothership", "Fleet Beacon", "Mothership Core", 300, 300, 8, 100));
+		unitData.add(new UnitData("Interceptor", null, "Carrier", 25, 0, 0, 8));
+		unitData.add(new UnitData("Photon Cannon", "Forge", "Probe", 150, 0, 0, 40));
 		
 		//Warpgate cooldowns
 		warpgateCooldown.put("Zealot", 28.0);
