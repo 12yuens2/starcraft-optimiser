@@ -27,7 +27,7 @@ public class SCPanel extends JPanel {
 	private static final int UNIT_COLUMNS = 3;
 	private static final int UNIT_ROWS = 14;
 	
-	private static final double DEFAULT_WEIGHT = 0.36;
+	public static final double DEFAULT_WEIGHT = 0.36;
 	
 	GameThread gameThread;
 	

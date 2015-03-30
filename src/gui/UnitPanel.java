@@ -34,10 +34,12 @@ public class UnitPanel extends GoalPanel {
 		GridBagConstraints c = new GridBagConstraints();
 		
 		c.fill = GridBagConstraints.BOTH;
-				
+		c.weightx = SCPanel.DEFAULT_WEIGHT;		
+		c.weighty = SCPanel.DEFAULT_WEIGHT;		
+		
 		this.unitName = unitName;
-		Random r = new Random();
-		this.c = new Color(r.nextInt(255), r.nextInt(255), r.nextInt(255));
+
+		this.c = Color.black;
 
 		
 		try {
