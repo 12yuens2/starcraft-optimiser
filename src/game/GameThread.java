@@ -15,6 +15,7 @@ public class GameThread extends Thread {
 	boolean keepRunning;
 	int searchedGames;
 	JLabel counter;
+	TimeState simulation;
 	
 	public GameThread(JTextPane targetOutput,JLabel counter, HashMap<String, Integer> goal){
 		this.targetOutput = targetOutput;
@@ -26,7 +27,11 @@ public class GameThread extends Thread {
 	
 	public synchronized void run(){
 		while (keepRunning){
-			new TimeState(targetOutput,goal);
+			simulation = new TimeState(targetOutput,goal);
+			while (simulation != null && !simulation.isFinished() && simulation.getTime() < TimeState.MAX_TIME){
+					simulation = simulation.next();
+			}
+			
 			searchedGames++;
 			
 			if (searchedGames % 5 == 0){
@@ -40,7 +45,7 @@ public class GameThread extends Thread {
 	}
 	
 	public void start(){
-		TimeState.MAX_TIME = 1800;
+		TimeState.MAX_TIME = 22200;
 		super.start();
 	}
 
