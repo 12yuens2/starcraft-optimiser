@@ -1,5 +1,7 @@
 package gui;
 
+import java.awt.Dimension;
+
 import javax.swing.JFrame;
 
 import data.Datasheet;
@@ -18,7 +20,9 @@ public class SCWindow extends JFrame {
 		add(panel);
 		pack();
 		setVisible(true);
-		
+		setPreferredSize(new Dimension(1000,800));
+		pack();
+//		setResizable(false);
 	}
 	
 	public static void main(String[] args) {

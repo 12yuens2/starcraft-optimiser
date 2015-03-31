@@ -74,7 +74,7 @@ public class Heuristics {
 		}
 		
 		//don't make more production than number of units you need from that building
-		if (timeState.getTotalNumber(builderName) > numberOfUnits) {
+		if (timeState.getTotalNumber(builderName) >= numberOfUnits) {
 			b = false;
 		}
 		return b;
@@ -93,7 +93,11 @@ public class Heuristics {
 		double gasCost = 0;
 		for (Entry<String,Integer> entry : timeState.getGoal().entrySet()){
 			gasCost += Datasheet.getGasCost(entry.getKey())*(entry.getValue()-timeState.getUnitNumbers().get(entry.getKey()));
-			
+			String dependancy = Datasheet.getDependancy(entry.getKey());
+			while (dependancy != null){
+				gasCost += Datasheet.getGasCost(dependancy);
+				dependancy = Datasheet.getDependancy(dependancy);
+			}
 		}
 		return (gasCost > timeState.getGas());
 	}
@@ -202,7 +206,7 @@ public class Heuristics {
 					//if more production can be made
 					double extraMineralSpending = 0;
 					double extraGasSpending = 0;
-					while (canSupportMins(income - timeState.getMineralSpending() - extraMineralSpending, nameOfUnit) 
+					while (!unitGoal.getKey().equals("Archon") && canSupportMins(income - timeState.getMineralSpending() - extraMineralSpending, nameOfUnit) 
 							&& canSupportGas(gasIncome - timeState.getGasSpending() - extraGasSpending, nameOfUnit)) {
 						numberOfBuildings++;
 						buildTime+= Datasheet.getBuildTime(Datasheet.getBuiltFrom(nameOfUnit));
@@ -228,6 +232,13 @@ public class Heuristics {
 		//return buildTime;
 	}
 	
+
+	public static boolean enoughTemplarToMakeArchon(TimeState timeState) {
+		int darkTemplars = timeState.getUnitNumbers().get("Dark Templar");
+		int highTemplars = timeState.getUnitNumbers().get("High Templar");
+		return (darkTemplars + highTemplars >=2);
+	}
+	
 	private static boolean canSupportMins(double income, String unitName){
 		return (income > Datasheet.getMineralCost(unitName)/Datasheet.getBuildTime(unitName));
 	}
@@ -246,7 +257,7 @@ public class Heuristics {
 		return (tempSupply + 1 >= timeState.getFutureMaxSupply());
 	}
 	
-	private static boolean worthToBuild(String buildingName, String unitName, double mineralIncome, double gasIncome, TimeState timeState) {
+	public static boolean worthToBuild(String buildingName, String unitName, TimeState timeState) {
 		double totalTime = 0;
 		double futureTime = 0;
 		double totalMinCost = 0;
@@ -256,7 +267,8 @@ public class Heuristics {
 		totalMinCost = numberOfUnitsNeeded*Datasheet.getMineralCost(unitName);
 		totalGasCost = numberOfUnitsNeeded*Datasheet.getGasCost(unitName);
 		
-		totalTime = ((totalMinCost/mineralIncome)+(totalGasCost/gasIncome))/(1.0*timeState.getTotalNumber(buildingName));
+		totalTime = ((totalMinCost/timeState.getMineralIncome())+(totalGasCost/timeState.getGasIncome()))/(1.0*timeState.getTotalNumber(buildingName));
 		return futureTime > totalTime;
 	}
+
 }

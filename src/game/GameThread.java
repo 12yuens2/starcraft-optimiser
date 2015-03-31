@@ -40,7 +40,7 @@ public class GameThread extends Thread {
 	}
 	
 	public void start(){
-		TimeState.MAX_TIME = 2200;
+		TimeState.MAX_TIME = 1800;
 		super.start();
 	}
 
