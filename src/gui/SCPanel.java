@@ -63,9 +63,8 @@ public class SCPanel extends JPanel {
 		}
 
 		buildOutput = new JTextPane();
-		buildOutput.setMinimumSize(new Dimension(400,400));
-		buildOutput.setPreferredSize(new Dimension(400,400));
 		buildOutput.setEditable(false);
+		buildOutput.setMinimumSize(new Dimension(300,300));
 		
 		startButton = new JButton("Start");
 		startButton.addActionListener(new StartButtonListener(this));
@@ -75,6 +74,8 @@ public class SCPanel extends JPanel {
 		counter.setHorizontalAlignment(JLabel.CENTER);
 		
 		scrollPane = new JScrollPane(buildOutput);
+		scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+		scrollPane.setMinimumSize(new Dimension(200,200));
 		
 		isStarted = false;
 		
@@ -93,24 +94,25 @@ public class SCPanel extends JPanel {
 				c.gridy++;
 			}
 		}
-		c.gridx= UNIT_COLUMNS;
+		
+		c.gridx= UNIT_COLUMNS + 1;
 		c.gridheight = UNIT_ROWS + 1;
 		c.gridy = 0;
 		c.weightx = DEFAULT_WEIGHT*2;
+		c.anchor = GridBagConstraints.EAST;
 		add(scrollPane,c);
 		
-		c.weightx = DEFAULT_WEIGHT;
+//		c.weightx = DEFAULT_WEIGHT;
 		c.gridy = UNIT_ROWS + 2;
 		c.gridheight = 1;
 		c.gridwidth = UNIT_COLUMNS;
 		c.gridx= 0;
-		c.weighty = DEFAULT_WEIGHT/2;
+		c.weighty = DEFAULT_WEIGHT/10;
 		add(startButton,c);
 		
 		c.gridx= UNIT_COLUMNS;
 		add(counter,c);
 		
-		revalidate();
 	}
 
 	public boolean isStarted() {

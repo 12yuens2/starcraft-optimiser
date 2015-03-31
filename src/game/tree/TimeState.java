@@ -45,8 +45,13 @@ public class TimeState {
 	
 	ArrayList<Integer> gatewayTransformations;
 	int numberOfWarpgates;
+	int numberOfTemplar;
 	
 	JTextPane output;
+	
+	public void finalize(){
+		//System.out.println("COLLECTED");
+	}
 	
 	//initial conditions
 	public TimeState(JTextPane output, HashMap<String,Integer> goal){
@@ -59,7 +64,7 @@ public class TimeState {
 		buildQueues = new HashMap<>();
 		gatewayTransformations = new ArrayList<>();
 		numberOfWarpgates = 0;
-		
+		numberOfTemplar = 0;
 		nexusEnergy = new ArrayList<>();
 		nexusEnergy.add(new Double(0.0));
 		nexusChronoboosts = new ArrayList<>();
@@ -94,7 +99,7 @@ public class TimeState {
 		
 		for (int i = 0; i < possibleOperations.size(); i++){
 			if (i == indexToWalk) {
-				futureStates.add(new TimeState(this, possibleOperations.get(i)));				
+				new TimeState(this, possibleOperations.get(i));				
 			}
 		}
 	}
@@ -118,6 +123,7 @@ public class TimeState {
 		
 		this.gatewayTransformations = parent.gatewayTransformations;
 		this.numberOfWarpgates = parent.numberOfWarpgates;
+		this.numberOfTemplar = parent.numberOfTemplar;
 //		this.unitNumbers = parent.cloneUnitNumbers();
 		
 //		this.buildQueues = parent.cloneBuildQueues();
@@ -171,8 +177,8 @@ public class TimeState {
 					}
 				}
 			} else {
-				//System.out.println("Goal did not complete in "  + time + " seconds. Shortest time so far is " + time);
-				//printMe();
+				System.out.println("Goal did not complete in "  + time + " seconds. Shortest time so far is " + time);
+				printMe();
 			//	System.out.println("\n\n\n");
 			}
 		}
@@ -185,7 +191,7 @@ public class TimeState {
 		ops.add(new Operation("wait", ""));
 		
 		//assigning workers
-		if (Heuristics.needMoreGas(this) && probesOnGas<unitNumbers.get("Assimilator")*3) {
+		if (Heuristics.needMoreGas(this) && probesOnGas < unitNumbers.get("Assimilator")*3) {
 			ops.add(new Operation("assign", "gas"));
 		} else if (probesOnGas > 0){
 			ops.add(new Operation("assign", "minerals"));
@@ -211,7 +217,8 @@ public class TimeState {
 			if (energy >= Chronoboost.COST){
 				for (Entry<String,BuildOrders> entry : buildQueues.entrySet()){
 					for (Build build : entry.getValue()){
-						if (UnitIs.Unit(build.nameOfUnit) && !build.isChronoboosted){
+						if ((UnitIs.Unit(build.nameOfUnit) && !build.isChronoboosted
+								&& UnitIs.Building(Datasheet.getBuiltFrom(build.nameOfUnit))) || UnitIs.Upgrade(build.nameOfUnit)){
 							if (build instanceof WarpgateBuild){
 								if (((WarpgateBuild)build).hasProducedUnit){
 									ops.add(new Operation("chronoboost", build.nameOfUnit));
@@ -233,6 +240,14 @@ public class TimeState {
 			
 			if (Heuristics.canBuild(unitName, this)) {
 				
+				if(UnitIs.Archon(unitName)){
+					if (Heuristics.needsMoreForGoal(unitName, this)){
+						if (numberOfTemplar >= 2){
+							ops.add(new Operation("build", unitName));							
+						}
+					}
+				}
+				
 				if (UnitIs.Probe(unitName)){
 					if (Heuristics.moreProbes(this)){
 						for (int i = 0; i <= unitNumbers.get("Nexus");i++){
@@ -242,8 +257,8 @@ public class TimeState {
 						}
 					}
 				}
-				if (UnitIs.Assimilator(unitName) && Heuristics.needsGas(this)){
-					if (hasFreeGeysers()) {
+				if (UnitIs.Assimilator(unitName) && Heuristics.needMoreGas(this)){
+					if (hasFreeGeysers()) {;
 						ops.add(new Operation("build", unitName));
 					}
 				}
@@ -273,13 +288,27 @@ public class TimeState {
 							} else {
 								ops.add(new Operation("build", unitName));
 							}
+						} else if (UnitIs.Archon(unitName)){
+							if (numberOfTemplar >= 2){
+								ops.add(new Operation("build", unitName));
+							}
 						} else {
 							ops.add(new Operation("build", unitName));	
 						}
 					}		
 				}
+				
+				if (UnitIs.HighTemplar(unitName)){
+					if (Heuristics.canBuild(unitName, this) && goal.containsKey("Archon")){
+						if (numberOfTemplar < (goal.get("Archon") - getTotalNumber("Archon"))*2 ){
+							ops.add(new Operation("build", unitName));										
+						}
+					}
+				}
+
 				if (UnitIs.Builder(unitName)){
 					if (Heuristics.needsMoreFromBuilder(unitName, this) && Heuristics.canSupportFromBuilder(unitName, this)){
+
 						// checking for support
 						ops.add(new Operation("build", unitName));						
 					}
@@ -335,6 +364,8 @@ public class TimeState {
 						nexusEnergy.add(new Double(0.0));
 						this.totalMinerals += Datasheet.MINS_PER_NEXUS;
 						this.totalGas += Datasheet.GAS_PER_NEXUS;
+					} else if (unit.equals("Dark Templar") || unit.equals("High Templar")) {
+						this.numberOfTemplar++;
 					}
 					addToMaxSupply(unit);
 				}
@@ -348,12 +379,27 @@ public class TimeState {
 			//wait...
 			break;
 		case "build":
-			for (UnitData data : Datasheet.unitData) {
-				if (op.getNoun().equals("Archon")) {
-					buildOrder.append(getTimeStamp() + " " + data.getName() + " " + supply + "/" + maxSupply + "\n");
-					this.buildQueues.get(Datasheet.getBuiltFrom(op.getNoun())).add(new Build(op.getNoun()));
+			//archon what a pain D:
+			if (op.getNoun().equals("Archon") && Heuristics.enoughTemplarToMakeArchon(this)) {
+				buildOrder.append(getTimeStamp() + " " + op.getNoun() + " " + supply + "/" + maxSupply + "\n");
 				
+				int sacrificedTemplar = 0;
+				while (sacrificedTemplar < 2){
+					if (unitNumbers.get("High Templar") > 0){
+						unitNumbers.replace("High Templar", unitNumbers.get("High Templar") -1 );
+						sacrificedTemplar++;
+					}
+					if (unitNumbers.get("Dark Templar") > 0){
+						unitNumbers.replace("Dark Templar", unitNumbers.get("Dark Templar") -1 );
+						sacrificedTemplar++;							
+					}
 				}
+				this.numberOfTemplar -= 2;
+
+			}
+			
+			for (UnitData data : Datasheet.unitData) {
+
 				if (op.getNoun().equals(data.getName())){
 					buildOrder.append(getTimeStamp() + " " + data.getName() + " " + supply + "/" + maxSupply + "\n");
 					this.minerals -= Datasheet.getMineralCost(op.getNoun());

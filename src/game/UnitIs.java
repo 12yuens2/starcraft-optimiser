@@ -21,6 +21,14 @@ public class UnitIs {
 		return unitName.equals("Gateway");
 	}
 	
+	public static boolean Archon(String unitName) {
+		return unitName.equals("Archon");
+	}
+	
+	public static boolean HighTemplar(String unitName) {
+		return unitName.endsWith("High Templar");
+	}
+	
 	public static boolean Unit(String unitName){
 		return (
 				unitName.equals("Probe") || unitName.equals("Zealot") || unitName.equals("Stalker") ||
@@ -39,7 +47,17 @@ public class UnitIs {
 				unitName.equals("Stargate") || unitName.equals("Mothership Core") || unitName.equals("High Templar") ||
 				unitName.equals("Probe") || unitName.equals("Carrier") || unitName.equals("Twilight Council") ||
 				unitName.equals("Templar Archives") || unitName.equals("Cybernetice Core") || unitName.equals("Forge") ||
-				unitName.equals("Fleet Beacon") || unitName.equals("Robotics Bay")
+				unitName.equals("Fleet Beacon") || unitName.equals("Robotics Bay") || unitName.equals("High Templar") ||
+				unitName.equals("Dark Templar")
+		);
+	}
+	
+	public static boolean Building(String unitName) {
+		return (
+				unitName.equals("Nexus") || unitName.equals("Gateway") || unitName.equals("Robotics Facility") ||
+				unitName.equals("Stargate") || unitName.equals("Twilight Council") || unitName.equals("Templar Archives") || 
+				unitName.equals("Cybernetice Core") || unitName.equals("Forge") ||unitName.equals("Fleet Beacon") || 
+				unitName.equals("Robotics Bay")
 		);
 	}
 	
@@ -66,7 +84,7 @@ public class UnitIs {
 				unitName.equals("Ground Armor 1") || unitName.equals("Ground Armor 2") ||
 				unitName.equals("Shields 1") || unitName.equals("Shields 2") ||
 				unitName.equals("Air Weapons 1") || unitName.equals("Air Weapons 2") ||
-				unitName.equals("Air Armor 1") || unitName.equals("Air Armor 2") 
+				unitName.equals("Air Armor 1") || unitName.equals("Air Armor 2") || unitName.equals("High Templar")
 		);
 	}
 	

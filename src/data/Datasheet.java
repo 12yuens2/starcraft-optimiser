@@ -72,6 +72,7 @@ public class Datasheet {
 		unitData.add(new UnitData("Mothership", "Fleet Beacon", "Mothership Core", 300, 300, 8, 100));
 		unitData.add(new UnitData("Interceptor", null, "Carrier", 25, 0, 0, 8));
 		unitData.add(new UnitData("Photon Cannon", "Forge", "Probe", 150, 0, 0, 40));
+		unitData.add(new UnitData("Archon", "High Templar", "Pylon", 0, 0, 0, 12));
 		
 		//Warpgate cooldowns
 		warpgateCooldown.put("Zealot", 28.0);
