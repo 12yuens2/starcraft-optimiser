@@ -141,7 +141,13 @@ public class TimeState {
 		
 		
 		if (goalComplete){
-			buildOrder.append("Goal complete in " + getTimeStamp());
+			buildOrder.append("Goal complete in " + getTimeStamp() + "\n");
+			buildOrder.append("Unit count:\n");
+			for (Entry<String,Integer> entry : unitNumbers.entrySet()){
+				if (entry.getValue() > 0){
+					buildOrder.append(entry.getKey() + " : " + entry.getValue() + "\n");					
+				}
+			}
 			if (output != null){
 				output.setText(this.buildOrder.toString());				
 			}
@@ -343,6 +349,11 @@ public class TimeState {
 			break;
 		case "build":
 			for (UnitData data : Datasheet.unitData) {
+				if (op.getNoun().equals("Archon")) {
+					buildOrder.append(getTimeStamp() + " " + data.getName() + " " + supply + "/" + maxSupply + "\n");
+					this.buildQueues.get(Datasheet.getBuiltFrom(op.getNoun())).add(new Build(op.getNoun()));
+				
+				}
 				if (op.getNoun().equals(data.getName())){
 					buildOrder.append(getTimeStamp() + " " + data.getName() + " " + supply + "/" + maxSupply + "\n");
 					this.minerals -= Datasheet.getMineralCost(op.getNoun());

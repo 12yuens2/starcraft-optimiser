@@ -63,8 +63,9 @@ public class SCPanel extends JPanel {
 		}
 
 		buildOutput = new JTextPane();
-		buildOutput.setPreferredSize(new Dimension(300,400));
-		//buildOutput.setEditable(false);
+		buildOutput.setMinimumSize(new Dimension(400,400));
+		buildOutput.setPreferredSize(new Dimension(400,400));
+		buildOutput.setEditable(false);
 		
 		startButton = new JButton("Start");
 		startButton.addActionListener(new StartButtonListener(this));
@@ -95,7 +96,7 @@ public class SCPanel extends JPanel {
 		c.gridx= UNIT_COLUMNS;
 		c.gridheight = UNIT_ROWS + 1;
 		c.gridy = 0;
-		c.weightx = DEFAULT_WEIGHT/2;
+		c.weightx = DEFAULT_WEIGHT*2;
 		add(scrollPane,c);
 		
 		c.weightx = DEFAULT_WEIGHT;

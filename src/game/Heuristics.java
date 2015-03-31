@@ -74,7 +74,7 @@ public class Heuristics {
 		}
 		
 		//don't make more production than number of units you need from that building
-		if (timeState.getTotalNumber(builderName) > numberOfUnits) {
+		if (timeState.getTotalNumber(builderName) >= numberOfUnits) {
 			b = false;
 		}
 		return b;
