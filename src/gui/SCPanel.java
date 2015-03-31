@@ -3,6 +3,10 @@ package gui;
 import game.GameThread;
 import game.UnitIs;
 import game.tree.TimeState;
+import gui.buttons.StartButtonListener;
+import gui.panels.GoalPanel;
+import gui.panels.UnitPanel;
+import gui.panels.UpgradePanel;
 
 import java.awt.Dimension;
 import java.awt.Graphics;
@@ -15,6 +19,7 @@ import java.util.HashMap;
 import java.util.Map.Entry;
 
 import javax.swing.JButton;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextPane;
@@ -36,6 +41,8 @@ public class SCPanel extends JPanel {
 
 	JScrollPane scrollPane;
 	
+	JLabel counter;
+	
 	JButton startButton, stopButton;
 	private boolean isStarted;
 	
@@ -56,14 +63,15 @@ public class SCPanel extends JPanel {
 		}
 
 		buildOutput = new JTextPane();
-		buildOutput.setPreferredSize(new Dimension(400,400));
+		buildOutput.setPreferredSize(new Dimension(300,400));
 		//buildOutput.setEditable(false);
 		
 		startButton = new JButton("Start");
 		startButton.addActionListener(new StartButtonListener(this));
 		
-		stopButton = new JButton("Stop");
-		stopButton.addActionListener(new StopButtonListener(this));
+		
+		counter = new JLabel("-");
+		counter.setHorizontalAlignment(JLabel.CENTER);
 		
 		scrollPane = new JScrollPane(buildOutput);
 		
@@ -87,7 +95,7 @@ public class SCPanel extends JPanel {
 		c.gridx= UNIT_COLUMNS;
 		c.gridheight = UNIT_ROWS + 1;
 		c.gridy = 0;
-		c.weightx = 3*DEFAULT_WEIGHT;
+		c.weightx = DEFAULT_WEIGHT/2;
 		add(scrollPane,c);
 		
 		c.weightx = DEFAULT_WEIGHT;
@@ -99,7 +107,7 @@ public class SCPanel extends JPanel {
 		add(startButton,c);
 		
 		c.gridx= UNIT_COLUMNS;
-		add(stopButton,c);
+		add(counter,c);
 		
 		revalidate();
 	}
@@ -121,13 +129,16 @@ public class SCPanel extends JPanel {
 		for (Entry<String, Integer> unitGoal : goal.entrySet()){
 			System.out.println(unitGoal.getKey() + " , " + unitGoal.getValue());
 		}
-		this.gameThread = new GameThread(buildOutput, goal);
+		startButton.setText("Searching... (Click to stop)");
+		this.gameThread = new GameThread(buildOutput,counter, goal);
 		gameThread.start();
+
 
 	}
 	
 	public void stop(){
 		this.isStarted = false;
+		startButton.setText("Start");
 		if (gameThread != null){
 			gameThread.askToStop();
 			try {
