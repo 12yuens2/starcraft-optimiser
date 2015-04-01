@@ -48,9 +48,31 @@ public class TimeState {
 	int numberOfTemplar;
 	
 	JTextPane output;
+
+	private boolean goalComplete;
 	
 	public void finalize(){
-		//System.out.println("COLLECTED");
+//		System.out.println("COLLECTED");
+	}
+	
+	public TimeState next(){
+		if (time > MAX_TIME){
+			return null;
+		}
+		
+		ArrayList<Operation> possibleOperations = getPossibleOperations();
+		Random generator = new Random();
+		
+		this.indexToWalk = generator.nextInt(possibleOperations.size());
+		
+		for (int i = 0; i < possibleOperations.size(); i++){
+			if (i == indexToWalk) {
+				return new TimeState(this, possibleOperations.get(i));				
+			}
+		}
+		
+		
+		return new TimeState(this, possibleOperations.get(0));
 	}
 	
 	//initial conditions
@@ -88,10 +110,10 @@ public class TimeState {
 		this.gas = 0;
 		this.supply = 6;
 		this.maxSupply = 10;
-		
+		this.goalComplete = false;
 		this.probesOnGas = 0;
 		this.buildOrder = new StringBuilder();
-		
+/*		
 		ArrayList<Operation> possibleOperations = getPossibleOperations();
 		Random generator = new Random();
 		
@@ -101,7 +123,7 @@ public class TimeState {
 			if (i == indexToWalk) {
 				new TimeState(this, possibleOperations.get(i));				
 			}
-		}
+		} */
 	}
 	//branch
 	public TimeState(TimeState parent,Operation operation){
@@ -113,7 +135,7 @@ public class TimeState {
 		this.supply = parent.supply;
 		this.maxSupply = parent.maxSupply;
 		this.probesOnGas = parent.probesOnGas;
-		
+		this.goalComplete = parent.goalComplete;
 		this.buildOrder = parent.buildOrder;
 		
 		this.nexusChronoboosts = parent.nexusChronoboosts;
@@ -137,7 +159,7 @@ public class TimeState {
 		
 		this.executeOperation(operation);
 		
-		boolean goalComplete = true;
+		goalComplete = true;
 		
 		for (Entry<String,Integer> unitGoal : goal.entrySet()){
 			if (unitGoal.getValue() != unitNumbers.get(unitGoal.getKey())){
@@ -154,16 +176,20 @@ public class TimeState {
 					buildOrder.append(entry.getKey() + " : " + entry.getValue() + "\n");					
 				}
 			}
+			
+			//printBuildOrder();
+			//printMe();
 			if (output != null){
 				output.setText(this.buildOrder.toString());				
 			}
-			printBuildOrder();
-			printMe();
-			TimeState.MAX_TIME = time - 1;
+			TimeState.MAX_TIME = time - 1;				
+			
+			//System.out.println(TimeState.MAX_TIME);
 		} else {	
 			//printMe(operation);
 			//System.out.println("\t--\t--\t--\t--");
 			if (this.time < MAX_TIME){
+				/*
 				this.futureStates = new ArrayList<>();
 				ArrayList<Operation> possibleOperations = getPossibleOperations();
 				
@@ -175,10 +201,10 @@ public class TimeState {
 					if (i == indexToWalk) {
 						futureStates.add(new TimeState(this, possibleOperations.get(i)));				
 					}
-				}
+				} */
 			} else {
-				System.out.println("Goal did not complete in "  + time + " seconds. Shortest time so far is " + time);
-				printMe();
+				//System.out.println("Goal did not complete in "  + time + " seconds. Shortest time so far is " + time);
+				//printMe();
 			//	System.out.println("\n\n\n");
 			}
 		}
@@ -669,6 +695,10 @@ public class TimeState {
 	}
 	public HashMap<String, BuildOrders> getBuildQueues() {
 		return buildQueues;
+	}
+
+	public boolean isFinished() {
+		return goalComplete;
 	}
 		
 }
