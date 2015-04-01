@@ -47,5 +47,9 @@ public class UnitPanel extends GoalPanel {
 		}
 		return number;
 	}
+
+	public void setCount(int count) {
+		input.setText(""+count);
+	}
 	
 }

@@ -44,5 +44,13 @@ public class UpgradePanel extends GoalPanel{
 			return 0;
 		}
 	}
+
+	public void setCount(int count) {
+		if (count == 1){
+			getUpgrade.setSelected(true);
+		} else {
+			getUpgrade.setSelected(false);
+		}
+	}
 	
 }

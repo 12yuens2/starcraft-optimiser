@@ -8,6 +8,7 @@ import gui.panels.GoalPanel;
 import gui.panels.UnitPanel;
 import gui.panels.UpgradePanel;
 
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.GridBagConstraints;
@@ -36,7 +37,7 @@ public class SCPanel extends JPanel {
 	
 	GameThread gameThread;
 	
-	ArrayList<GoalPanel> unitPanels;
+	ArrayList<GoalPanel> goalPanels;
 	JTextPane buildOutput;
 
 	JScrollPane scrollPane;
@@ -47,18 +48,19 @@ public class SCPanel extends JPanel {
 	private boolean isStarted;
 	
 	public SCPanel() {
+		setBackground(Color.black);
 		setLayout(new GridBagLayout());
 		GridBagConstraints c = new GridBagConstraints();
 		
-		unitPanels = new ArrayList<>();
+		goalPanels = new ArrayList<>();
 		
 		for (UnitData data : Datasheet.unitData){
 			if (UnitIs.Unit(data.getName())){
-				unitPanels.add(new UnitPanel(data.getName()));				
+				goalPanels.add(new UnitPanel(data.getName()));				
 			}
 			
 			if (UnitIs.Upgrade(data.getName())){
-				unitPanels.add(new UpgradePanel(data.getName()));				
+				goalPanels.add(new UpgradePanel(data.getName()));				
 			}
 		}
 
@@ -71,7 +73,9 @@ public class SCPanel extends JPanel {
 		
 		
 		counter = new JLabel("-");
+		counter.setOpaque(true);
 		counter.setHorizontalAlignment(JLabel.CENTER);
+		counter.setBackground(Color.white);
 		
 		scrollPane = new JScrollPane(buildOutput);
 		scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
@@ -86,7 +90,7 @@ public class SCPanel extends JPanel {
 		c.weighty = DEFAULT_WEIGHT;
 
 		
-		for (GoalPanel panel : unitPanels){
+		for (GoalPanel panel : goalPanels){
 			add(panel,c);
 			c.gridx++;
 			if (c.gridx > UNIT_COLUMNS - 1){
@@ -102,12 +106,11 @@ public class SCPanel extends JPanel {
 		c.anchor = GridBagConstraints.EAST;
 		add(scrollPane,c);
 		
-//		c.weightx = DEFAULT_WEIGHT;
 		c.gridy = UNIT_ROWS + 2;
 		c.gridheight = 1;
 		c.gridwidth = UNIT_COLUMNS;
 		c.gridx= 0;
-		c.weighty = DEFAULT_WEIGHT/10;
+		c.weighty = DEFAULT_WEIGHT/50;
 		add(startButton,c);
 		
 		c.gridx= UNIT_COLUMNS;
@@ -115,6 +118,18 @@ public class SCPanel extends JPanel {
 		
 	}
 
+	public void setUnitCount(String unitName, int count){
+		for (GoalPanel panel : goalPanels){
+			if (panel.getUnitName().equals(unitName)){
+				if (panel instanceof UnitPanel){
+					((UnitPanel)panel).setCount(count);
+				} else if (panel instanceof UpgradePanel){
+					((UpgradePanel)panel).setCount(count);
+				}
+			}
+		}
+	}
+	
 	public boolean isStarted() {
 		return isStarted;
 	}
@@ -122,7 +137,7 @@ public class SCPanel extends JPanel {
 	public void start(){
 		this.isStarted = true;
 		HashMap<String, Integer> goal = new HashMap<>();
-		for (GoalPanel panel : unitPanels){
+		for (GoalPanel panel : goalPanels){
 			String name = panel.getUnitName();
 			int number = panel.getNumber();
 			if (number > 0){

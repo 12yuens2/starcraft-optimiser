@@ -17,6 +17,10 @@ public class SCWindow extends JFrame {
 		
 		this.panel = new SCPanel();
 		
+		SCMenuBar menu = new SCMenuBar(this);
+		
+		setJMenuBar(menu);
+		
 		add(panel);
 		pack();
 		setVisible(true);

@@ -30,6 +30,8 @@ public abstract class GoalPanel extends JPanel {
 	
 	public abstract int getNumber();
 	
+	public abstract void setCount(int count);
+	
 	public GoalPanel(String goalName){
 		this.unitName = goalName;
 		try {
