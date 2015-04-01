@@ -2,6 +2,11 @@ package game.tree;
 
 import data.Datasheet;
 
+/**
+ * The Warping in of a unit.
+ * The warping in is considered finished when the cooldown 
+ * of the warp gate expires.
+ */
 public class WarpgateBuild extends Build{
 
 	double cooldownTime;
@@ -17,7 +22,11 @@ public class WarpgateBuild extends Build{
 	public void setProducedUnit() {
 		this.hasProducedUnit = true;
 	}
-	
+
+	/**
+	 * Checks if the warp gate has finished warping in a unit, but 
+	 * might still have a cooldown.
+	 */
 	public boolean hasProducedUnit(){
 		return (this.time >= this.buildTime);
 	}

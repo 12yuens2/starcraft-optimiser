@@ -1,5 +1,8 @@
 package game;
 
+/**
+ * Helper class that is used for unit comparisons.
+ */
 public class UnitIs {
 	
 	public static boolean Probe(String unitName){
@@ -26,7 +29,11 @@ public class UnitIs {
 	}
 	
 	public static boolean HighTemplar(String unitName) {
-		return unitName.endsWith("High Templar");
+		return unitName.equals("High Templar");
+	}
+	
+	public static boolean Warpgate(String unitName) {
+		return unitName.equals("Warp Gate");
 	}
 	
 	public static boolean Unit(String unitName){

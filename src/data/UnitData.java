@@ -1,5 +1,8 @@
 package data;
 
+/**
+ * Attributes of each individual unit.
+ */
 public class UnitData {
 	String name;
 	String dependancy;

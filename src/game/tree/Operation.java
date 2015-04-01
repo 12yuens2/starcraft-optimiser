@@ -1,5 +1,9 @@
 package game.tree;
 
+/**
+ * A possible operation at each second of the game.
+ * Only one operation is executed per second.
+ */
 public class Operation {
 
 	private String verb;

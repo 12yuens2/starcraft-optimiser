@@ -1,18 +1,23 @@
-package gui;
+package gui.menu;
 
+import gui.SCPanel;
 import gui.panels.GoalPanel;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.HashMap;
 import java.util.Map.Entry;
 
+import data.Goal;
+
+/**
+ * Action Listener for Menu Items to add goals listed in the specification.
+ */
 public class MenuGoalListener implements ActionListener {
 
 	SCPanel panel;
-	HashMap<String,Integer> goal;
+	Goal goal;
 	
-	public MenuGoalListener(SCPanel panel,HashMap<String,Integer> goal ) {
+	public MenuGoalListener(SCPanel panel,Goal goal ) {
 		this.panel = panel;
 		this.goal = goal;
 	}

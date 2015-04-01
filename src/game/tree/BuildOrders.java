@@ -3,8 +3,10 @@ package game.tree;
 import java.util.ArrayList;
 import java.util.Iterator;
 
-import data.Datasheet;
-
+/**
+ * The collection of build orders for a specific type
+ * of builder.
+ */
 public class BuildOrders extends ArrayList<Build> {
 	
 	public BuildOrders(){
@@ -16,7 +18,11 @@ public class BuildOrders extends ArrayList<Build> {
 			build.increment();
 		}
 	}
-		
+	
+	/**
+	 * Finds all completed units of this type of builder.
+	 * @return An array list with the name of each completed unit.
+	 */
 	public ArrayList<String> getProducedUnits(){
 		ArrayList<String> completedUnits = new ArrayList<>();
 		for (Build build : this){
@@ -34,6 +40,10 @@ public class BuildOrders extends ArrayList<Build> {
 		return completedUnits;
 	}
 	
+	/**
+	 * Removes any completed builds from the queue, freeing more
+	 * production space.
+	 */
 	public void removeCompleted(){
 		for (Iterator<Build> iterator = this.iterator(); iterator.hasNext();){
 		    Build build = iterator.next();

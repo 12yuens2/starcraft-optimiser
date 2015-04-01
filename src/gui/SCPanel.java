@@ -2,22 +2,15 @@ package gui;
 
 import game.GameThread;
 import game.UnitIs;
-import game.tree.TimeState;
-import gui.buttons.StartButtonListener;
 import gui.panels.GoalPanel;
 import gui.panels.UnitPanel;
 import gui.panels.UpgradePanel;
 
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.Graphics;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map.Entry;
 
 import javax.swing.JButton;
 import javax.swing.JLabel;
@@ -26,8 +19,12 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextPane;
 
 import data.Datasheet;
+import data.Goal;
 import data.UnitData;
 
+/**
+ * The main panel of the optimiser.
+ */
 public class SCPanel extends JPanel {
 	
 	private static final int UNIT_COLUMNS = 3;
@@ -37,7 +34,7 @@ public class SCPanel extends JPanel {
 	
 	GameThread gameThread;
 	
-	ArrayList<GoalPanel> goalPanels;
+	public ArrayList<GoalPanel> goalPanels;
 	JTextPane buildOutput;
 
 	JScrollPane scrollPane;
@@ -83,6 +80,9 @@ public class SCPanel extends JPanel {
 		
 		isStarted = false;
 		
+		/**
+		 * GridBagConstraints to add all the components.
+		 */
 		c.gridx = 0;
 		c.gridy = 0;
 		c.fill = GridBagConstraints.BOTH;
@@ -134,9 +134,12 @@ public class SCPanel extends JPanel {
 		return isStarted;
 	}
 	
+	/**
+	 * Starts the simulation on a new thread.
+	 */
 	public void start(){
 		this.isStarted = true;
-		HashMap<String, Integer> goal = new HashMap<>();
+		Goal goal = new Goal();
 		for (GoalPanel panel : goalPanels){
 			String name = panel.getUnitName();
 			int number = panel.getNumber();
@@ -144,14 +147,9 @@ public class SCPanel extends JPanel {
 				goal.put(name, number);
 			}
 		}
-		for (Entry<String, Integer> unitGoal : goal.entrySet()){
-			System.out.println(unitGoal.getKey() + " , " + unitGoal.getValue());
-		}
 		startButton.setText("Searching... (Click to stop)");
 		this.gameThread = new GameThread(buildOutput,counter, goal);
 		gameThread.start();
-
-
 	}
 	
 	public void stop(){
@@ -160,10 +158,10 @@ public class SCPanel extends JPanel {
 		if (gameThread != null){
 			gameThread.askToStop();
 			try {
+				//Safe since askToStop is called.
 				gameThread.join();
 			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				System.err.println("Unexpected Interruption.");
 			}
 		}
 	}

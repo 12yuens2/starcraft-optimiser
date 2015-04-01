@@ -15,8 +15,12 @@ import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JTextField;
 
+/**
+ * Superclass for GUI Panels.
+ * Contains icon, name and a JComponent for user input
+ * that is to be implemented.
+ */
 public abstract class GoalPanel extends JPanel {
 	
 	protected String unitName;
@@ -37,8 +41,7 @@ public abstract class GoalPanel extends JPanel {
 		try {
 			image = ImageIO.read(new File(iconLocation + unitName + ".jpeg" ));
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			System.err.println("There was an error with one of the files.");
 		}
 		
 		pic = new JLabel(new ImageIcon(image));	

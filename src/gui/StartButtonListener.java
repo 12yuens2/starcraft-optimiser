@@ -1,10 +1,11 @@
-package gui.buttons;
-
-import gui.SCPanel;
+package gui;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
+/**
+ * Action listener to start and stop the simulation.
+ */
 public class StartButtonListener implements ActionListener {
 
 	SCPanel panel;

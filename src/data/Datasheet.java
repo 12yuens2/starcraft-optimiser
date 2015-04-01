@@ -3,6 +3,10 @@ package data;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+/**
+ * Contains all the information of the game, including
+ * all the unit data and various constants.
+ */
 public class Datasheet {
 
 	public static final int MAX_SUPPLY = 200;
@@ -23,6 +27,7 @@ public class Datasheet {
 	
 	public static final double CHRONOBOOST_DURATION = 20;
 	public static final double CHRONOBOST_MIN_TIME = 15.0;
+	public static final double CHRONOBOOST_COST = 25.0;
 	
 	public static final double WARPGATE_TRANFORMATION_TIME = 10;
 	public static final double WARPIN_TIME = 5;

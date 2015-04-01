@@ -1,17 +1,21 @@
 package gui;
 
+import gui.menu.SCMenuBar;
+
 import java.awt.Dimension;
 
 import javax.swing.JFrame;
 
 import data.Datasheet;
 
+/**
+ * The window for the optimiser.
+ */
 public class SCWindow extends JFrame {
 	
-	SCPanel panel;
+	public SCPanel panel;
 	
 	public SCWindow(){
-		
 		setTitle("Starcraft 2 Build Optimizer");
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
 		
@@ -24,9 +28,8 @@ public class SCWindow extends JFrame {
 		add(panel);
 		pack();
 		setVisible(true);
-		setPreferredSize(new Dimension(1000,800));
+		setPreferredSize(new Dimension(1200,800));
 		pack();
-//		setResizable(false);
 	}
 	
 	public static void main(String[] args) {

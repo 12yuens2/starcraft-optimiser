@@ -2,6 +2,9 @@ package game.tree;
 
 import data.Datasheet;
 
+/**
+ * The Build command and status of a unit.
+ */
 public class Build {
 	String nameOfUnit;
 	double time;
@@ -28,8 +31,6 @@ public class Build {
 		} else {
 			this.time+= 1;			
 		}
-
-		
 	}
 
 	public boolean hasProducedUnit(){

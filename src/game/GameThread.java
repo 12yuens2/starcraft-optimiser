@@ -8,6 +8,9 @@ import javax.swing.JLabel;
 import javax.swing.JTextPane;
 import javax.swing.SwingUtilities;
 
+/**
+ * Thread that controls the simulation.
+ */
 public class GameThread extends Thread {
 
 	JTextPane targetOutput;
@@ -25,27 +28,25 @@ public class GameThread extends Thread {
 		this.counter = counter;
 	}
 	
-	public synchronized void run(){
+	public void run(){
 		while (keepRunning){
 			simulation = new TimeState(targetOutput,goal);
-			while (simulation != null && !simulation.isFinished() && simulation.getTime() < TimeState.MAX_TIME){
+			while (simulation != null && !simulation.isFinished() && simulation.getTime() < TimeState.maxTime){
 					simulation = simulation.next();
 			}
-			
-			searchedGames++;
-			
-			if (searchedGames % 5 == 0){
-				SwingUtilities.invokeLater(new Runnable() {
-					public void run(){
-						counter.setText("Searched " + searchedGames + " games.");				
-					}
-				});							
-			}
+
+			//Update GUI on the AWT thread.
+			SwingUtilities.invokeLater(new Runnable() {
+				public void run(){
+					counter.setText("Searched " + ++searchedGames + " games.");				
+				}
+			});	
 		}
 	}
 	
 	public void start(){
-		TimeState.MAX_TIME = 22200;
+		//Reset the max time for the build.
+		TimeState.maxTime = 2000;
 		super.start();
 	}
 

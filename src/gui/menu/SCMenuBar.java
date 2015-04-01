@@ -1,4 +1,6 @@
-package gui;
+package gui.menu;
+
+import gui.SCWindow;
 
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
@@ -6,6 +8,9 @@ import javax.swing.JMenuItem;
 
 import data.Goal;
 
+/**
+ * Menu Bar holding the builds listed in the specification.
+ */
 public class SCMenuBar extends JMenuBar{
 	
 	SCWindow window;
