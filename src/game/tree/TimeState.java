@@ -217,7 +217,7 @@ public class TimeState {
 		ops.add(new Operation("wait", ""));
 		
 		//assigning workers
-		if (Heuristics.needMoreGas(this) && probesOnGas < unitNumbers.get("Assimilator")*3) {
+		if (Heuristics.needMoreGas(this) && probesOnGas < unitNumbers.get("Assimilator")*3 && Heuristics.getGas(this)) {
 			ops.add(new Operation("assign", "gas"));
 		} else if (probesOnGas > 0){
 			ops.add(new Operation("assign", "minerals"));
@@ -250,14 +250,14 @@ public class TimeState {
 									ops.add(new Operation("chronoboost", build.nameOfUnit));
 								}
 							} else {
-								if (build.buildTime - build.time > 30.0){
+								if (build.buildTime - build.time > Datasheet.CHRONOBOST_MIN_TIME){
 									ops.add(new Operation("chronoboost", build.nameOfUnit));
 								}
 							}
 						}
 					}
 				}
-			}			
+			}
 		}
 		
 		//Building units and buildings
@@ -363,7 +363,11 @@ public class TimeState {
 		addResources();
 
 		for (int i = 0; i < nexusEnergy.size(); i++){
-			nexusEnergy.set(i, nexusEnergy.get(i) + 1);
+			if (nexusEnergy.get(i) >= Datasheet.MAX_ENERGY_IN_NEXUS) {
+				//do nothing as energy reached cap in nexus
+			} else {
+				nexusEnergy.set(i, nexusEnergy.get(i) + 1);
+			}
 		}
 
 		for (int i = 0; i < gatewayTransformations.size(); i++){
@@ -450,9 +454,10 @@ public class TimeState {
 		case "chronoboost":
 			for (Entry<String,BuildOrders> buildQueue : buildQueues.entrySet()){
 				for (Build build : buildQueue.getValue()){
-					if (build.nameOfUnit.equals(op.getNoun()) && build.buildTime - build.time > 30){
+					System.out.println(build.isChronoboosted);
+					if (build.nameOfUnit.equals(op.getNoun()) && build.buildTime - build.time > Datasheet.CHRONOBOST_MIN_TIME 
+							&& !build.isChronoboosted){
 						build.chronoboost();
-						//System.out.println("Chronobooosting");
 						break;
 					}
 				}
@@ -660,6 +665,7 @@ public class TimeState {
 		System.out.println("PLS PRINT BUILD");
 		System.out.println(buildOrder.toString());
 	}
+	
 	public HashMap<String, Integer> getUnitNumbers() {
 		return unitNumbers;
 	}

@@ -22,6 +22,7 @@ public class Datasheet {
 	public static final double GAS_PER_SECOND = GAS_PER_MINUTE/60.0;
 	
 	public static final double CHRONOBOOST_DURATION = 20;
+	public static final double CHRONOBOST_MIN_TIME = 15.0;
 	
 	public static final double WARPGATE_TRANFORMATION_TIME = 10;
 	public static final double WARPIN_TIME = 5;
@@ -53,24 +54,24 @@ public class Datasheet {
 		unitData.add(new UnitData("Fleet Beacon", "Stargate","Probe", 300, 200, 0, 60));
 		
 		//Units
-		unitData.add(new UnitData("Probe", null, "Nexus", 50, 0, 1, 17));
-		unitData.add(new UnitData("Zealot", null, "Gateway", 100, 0, 2, 38));
+		unitData.add(new UnitData("Probe", "Nexus", "Nexus", 50, 0, 1, 17));
+		unitData.add(new UnitData("Zealot", "Gateway", "Gateway", 100, 0, 2, 38));
 		unitData.add(new UnitData("Stalker", "Cybernetics Core", "Gateway", 125, 50, 2, 42));
-		unitData.add(new UnitData("Sentry", null, "Gateway", 50, 100, 1, 37));
-		unitData.add(new UnitData("Observer", null, "Robotics Facility", 25, 75, 1, 40));
-		unitData.add(new UnitData("Immortal", null, "Robotics Facility", 250, 100, 4, 55));
-		unitData.add(new UnitData("Phoenix", null, "Stargate", 150, 100, 2, 35));
-		unitData.add(new UnitData("Void Ray", null, "Stargate", 250, 100, 3, 60));
-		unitData.add(new UnitData("Oracle", null, "Stargate", 150, 150, 3, 50));
-		unitData.add(new UnitData("Warp Prism", null, "Robotics Facility", 200, 0, 2, 50));
+		unitData.add(new UnitData("Sentry", "Gateway", "Gateway", 50, 100, 1, 37));
+		unitData.add(new UnitData("Observer", "Robotics Facility", "Robotics Facility", 25, 75, 1, 40));
+		unitData.add(new UnitData("Immortal", "Robotics Facility", "Robotics Facility", 250, 100, 4, 55));
+		unitData.add(new UnitData("Warp Prism", "Robotics Facility", "Robotics Facility", 200, 0, 2, 50));
 		unitData.add(new UnitData("Colossus", "Robotics Bay", "Robotics Facility", 300, 200, 6, 75));
+		unitData.add(new UnitData("Phoenix", "Stargate", "Stargate", 150, 100, 2, 35));
+		unitData.add(new UnitData("Void Ray", "Stargate", "Stargate", 250, 100, 3, 60));
+		unitData.add(new UnitData("Oracle", "Stargate", "Stargate", 150, 150, 3, 50));
 		unitData.add(new UnitData("Tempest", "Fleet Beacon", "Stargate", 300, 200, 4, 60));
 		unitData.add(new UnitData("High Templar", "Templar Archives", "Gateway", 50, 150, 2, 55));
 		unitData.add(new UnitData("Dark Templar", "Dark Shrine", "Gateway", 125, 125, 2, 55));
 		unitData.add(new UnitData("Carrier", "Fleet Beacon", "Stargate", 350, 250, 6, 120));
 		unitData.add(new UnitData("Mothership Core", "Cybernetics Core", "Nexus", 100, 100, 2, 30));
 		unitData.add(new UnitData("Mothership", "Fleet Beacon", "Mothership Core", 300, 300, 8, 100));
-		unitData.add(new UnitData("Interceptor", null, "Carrier", 25, 0, 0, 8));
+		unitData.add(new UnitData("Interceptor", "Carrier", "Carrier", 25, 0, 0, 8));
 		unitData.add(new UnitData("Photon Cannon", "Forge", "Probe", 150, 0, 0, 40));
 		unitData.add(new UnitData("Archon", "High Templar", "Pylon", 0, 0, 0, 12));
 		

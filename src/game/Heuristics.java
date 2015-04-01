@@ -12,6 +12,10 @@ import data.UnitData;
 
 public class Heuristics {
 
+	private static int totalMineralCost;
+	private static int totalGasCost;
+	private static double totalBuildTime;
+	
 	public static void makeProductionBuildings(ArrayList<Operation> ops, UnitData data, TimeState timeState) {
 		
 		//build production building if unit in goal builds from that building
@@ -24,7 +28,7 @@ public class Heuristics {
 	public static boolean moreProbes(TimeState timeState) {
 	//		return (timeTaken(timeState.unitNumbers.get("Probe"), timeState) 
 	//			> timeTaken(timeState.unitNumbers.get("Probe")+1, timeState));
-			if (timeTaken(timeState.getUnitNumbers().get("Probe"), timeState.getUnitNumbers().get("Nexus"), timeState) == true){
+			if (needMoreIncome(timeState.getUnitNumbers().get("Probe"), timeState.getUnitNumbers().get("Nexus"), timeState) == true){
 				//System.out.println(timeState.time + " : IT IS WORTH BUILDING MORE PROBERINOS");
 				return true;
 			} else {
@@ -80,26 +84,14 @@ public class Heuristics {
 		return b;
 	}
 	
-	public static boolean needsGas(TimeState timeState) {
-		for (Entry<String,Integer> entry : timeState.getGoal().entrySet()){
-			if (Datasheet.getGasCost(entry.getKey()) > 0){
-				return true;
-			}
-		}
-		return false;
+	public static boolean needMoreGas(TimeState timeState) {
+		calculateTotalResources(timeState);
+		return (totalGasCost > timeState.getGas());
 	}
 	
-	public static boolean needMoreGas(TimeState timeState) {
-		double gasCost = 0;
-		for (Entry<String,Integer> entry : timeState.getGoal().entrySet()){
-			gasCost += Datasheet.getGasCost(entry.getKey())*(entry.getValue()-timeState.getUnitNumbers().get(entry.getKey()));
-			String dependancy = Datasheet.getDependancy(entry.getKey());
-			while (dependancy != null){
-				gasCost += Datasheet.getGasCost(dependancy);
-				dependancy = Datasheet.getDependancy(dependancy);
-			}
-		}
-		return (gasCost > timeState.getGas());
+	public static boolean getGas(TimeState timeState) {
+		calculateTotalResources(timeState);
+		return (timeState.getGasIncome()*totalBuildTime < totalGasCost);
 	}
 	
 	public static boolean needMoreSupply(TimeState timeState) {
@@ -152,12 +144,12 @@ public class Heuristics {
 
 	public static boolean worthExpanding(TimeState timeState) {
 		boolean b = timeState.getTotalNumber("Nexus") <= Datasheet.MAX_NUMBER_OF_NEXI 
-				&& Heuristics.timeTaken(timeState.getUnitNumbers().get("Probe"), timeState.getTotalNumber("Nexus"), timeState);
+				&& Heuristics.needMoreIncome(timeState.getUnitNumbers().get("Probe"), timeState.getTotalNumber("Nexus"), timeState);
 		//System.out.println(b);
 		return b;
 	}
 	
-	public static boolean timeTaken(int numberOfProbes, int numberOfNexi, TimeState timeState) {
+	public static boolean needMoreIncome(int numberOfProbes, int numberOfNexi, TimeState timeState) {
 		int deltaNexi = numberOfNexi-timeState.getUnitNumbers().get("Nexus");
 		double income = timeState.getMineralIncome(numberOfProbes - timeState.getProbesOnGas(), numberOfNexi);
 		double gasIncome = timeState.getGasIncome(timeState.getProbesOnGas()+deltaNexi);
@@ -239,12 +231,115 @@ public class Heuristics {
 		return (darkTemplars + highTemplars >=2);
 	}
 	
+	public static boolean shouldGetWarpgate(TimeState timeState) {
+		resetTotalResources();
+		for (Entry<String, Integer> entry: timeState.getGoal().entrySet()) {
+			String unitName = entry.getKey();
+			if (UnitIs.fromGateway(unitName)) {
+				totalBuildTime += Datasheet.getBuildTime(unitName) * (entry.getValue()-timeState.getTotalNumber(unitName));
+			}
+		}
+	}
+	
 	private static boolean canSupportMins(double income, String unitName){
 		return (income > Datasheet.getMineralCost(unitName)/Datasheet.getBuildTime(unitName));
 	}
 	
 	private static boolean canSupportGas(double gasIncome, String unitName) {
 		return (gasIncome > Datasheet.getGasCost(unitName)/Datasheet.getBuildTime(unitName));
+	}
+	
+	private static double getTotalGasCost(TimeState timeState) {
+		double gasCost = 0;
+		for (Entry<String,Integer> entry : timeState.getGoal().entrySet()){
+			gasCost += Datasheet.getGasCost(entry.getKey())*(entry.getValue()-timeState.getTotalNumber(entry.getKey()));
+			String dependancy = Datasheet.getDependancy(entry.getKey());
+			while (dependancy != null){
+				gasCost += Datasheet.getGasCost(dependancy);
+				dependancy = Datasheet.getDependancy(dependancy);
+			}
+		}
+		return gasCost;
+	}
+	
+	private static void resetTotalResources() {
+		totalBuildTime = 0;
+		totalMineralCost = 0;
+		totalGasCost = 0;
+	}
+	
+	private static void calculateTotalResources(TimeState timeState) {
+		calculateTotalResources(timeState.getUnitNumbers().get("Probe"), timeState.getUnitNumbers().get("Nexus"), timeState);
+	}
+	
+	private static void calculateTotalResources(int numberOfProbes, int numberOfNexi, TimeState timeState) {
+		int deltaNexi = numberOfNexi-timeState.getUnitNumbers().get("Nexus");
+		double income = timeState.getMineralIncome(numberOfProbes - timeState.getProbesOnGas(), numberOfNexi);
+		double gasIncome = timeState.getGasIncome(timeState.getProbesOnGas()+deltaNexi);
+		resetTotalResources();
+		HashSet<String> dependancies = new HashSet<>();
+		
+		totalBuildTime += deltaNexi*Datasheet.getBuildTime("Nexus");
+		totalMineralCost += deltaNexi*Datasheet.getMineralCost("Nexus");
+		
+		for (Entry<String, Integer> unitGoal : timeState.getGoal().entrySet()) {
+			if (unitGoal.getValue()-timeState.getTotalNumber(unitGoal.getKey()) > 0) {
+			
+				//check dependancies and stuff and things ._.
+				String nameOfUnit = unitGoal.getKey();
+				while (nameOfUnit != null && Datasheet.getDependancy(nameOfUnit) != null 
+						&& timeState.getTotalNumber((Datasheet.getDependancy(nameOfUnit))) == 0) {
+					nameOfUnit = Datasheet.getDependancy(nameOfUnit);
+					if (nameOfUnit != null){
+						dependancies.add(nameOfUnit);		
+					}
+				}
+				
+				//add total buildtime and costs of dependancies from goal
+				for (String nameOfDependancy : dependancies){
+					String dependancyName = Datasheet.getDependancy(nameOfDependancy);
+					if (dependancyName != null){
+						totalBuildTime+= Datasheet.getBuildTime(dependancyName);
+						totalMineralCost+= Datasheet.getMineralCost(dependancyName);	
+						totalGasCost+=Datasheet.getGasCost(dependancyName);
+					}
+				}
+				
+				//check number of buildings currently available to build unit with
+				int numberOfBuildings = 0;
+				if (unitGoal.getValue()-timeState.getTotalNumber(nameOfUnit) > 0) {
+					numberOfBuildings = timeState.getTotalNumber((Datasheet.getBuiltFrom(nameOfUnit)));
+					if (numberOfBuildings == 0){
+						numberOfBuildings++;
+						totalBuildTime+= Datasheet.getBuildTime(Datasheet.getBuiltFrom(nameOfUnit));
+						totalMineralCost+= Datasheet.getMineralCost(Datasheet.getBuiltFrom(nameOfUnit));
+						totalGasCost+=Datasheet.getGasCost(Datasheet.getBuiltFrom(nameOfUnit));
+					}
+					
+					//if more production can be made
+					double extraMineralSpending = 0;
+					double extraGasSpending = 0;
+					while (!unitGoal.getKey().equals("Archon") && canSupportMins(income - timeState.getMineralSpending() - extraMineralSpending, nameOfUnit) 
+							&& canSupportGas(gasIncome - timeState.getGasSpending() - extraGasSpending, nameOfUnit)) {
+						numberOfBuildings++;
+						totalBuildTime+= Datasheet.getBuildTime(Datasheet.getBuiltFrom(nameOfUnit));
+						totalMineralCost+= Datasheet.getMineralCost(Datasheet.getBuiltFrom(nameOfUnit));
+						totalGasCost+= Datasheet.getGasCost(nameOfUnit);
+						extraMineralSpending += Datasheet.getMineralCost(nameOfUnit)/(1.0*Datasheet.getBuildTime(nameOfUnit));
+						extraGasSpending += Datasheet.getGasCost(nameOfUnit)/(1.0*Datasheet.getBuildTime(nameOfUnit));
+						//System.out.println("PLS SUPPORT "+numberOfBuildings+" "+Datasheet.getBuiltFrom(nameOfUnit));
+					}
+				}
+				
+				totalBuildTime+= Datasheet.getBuildTime(nameOfUnit)*unitGoal.getValue()/(1.0*numberOfBuildings);
+				totalMineralCost+= Datasheet.getMineralCost(nameOfUnit)*unitGoal.getValue();
+				totalGasCost+= Datasheet.getGasCost(nameOfUnit)*unitGoal.getValue();
+				
+			}
+		}
+	//	System.out.println("income needed "+incomeNeeded+" income "+income);
+		
+		//return buildTime;
 	}
 	
 	private static boolean willBeSupplyBlocked(TimeState timeState) {

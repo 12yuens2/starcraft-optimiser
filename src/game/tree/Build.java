@@ -23,6 +23,7 @@ public class Build {
 			this.chronoboostTime++;
 			if (this.chronoboostTime >= Datasheet.CHRONOBOOST_DURATION){
 				this.isChronoboosted = false;
+				chronoboostTime = 0;
 			}
 		} else {
 			this.time+= 1;			
