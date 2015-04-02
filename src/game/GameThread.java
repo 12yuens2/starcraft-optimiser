@@ -2,8 +2,6 @@ package game;
 
 import game.tree.TimeState;
 
-import java.util.HashMap;
-
 import javax.swing.JLabel;
 import javax.swing.JTextPane;
 import javax.swing.SwingUtilities;

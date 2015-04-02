@@ -11,7 +11,6 @@ import java.util.Random;
 
 import javax.swing.JTextPane;
 
-import utils.Timer;
 import data.Datasheet;
 import data.UnitNumbers;
 import data.UnitData;

@@ -10,8 +10,15 @@ import java.util.Map.Entry;
 import data.Datasheet;
 import data.UnitData;
 
+/**
+ * A helper class that handles various aspects of in-game logic.
+ */
 public class Heuristics {
 
+	/**
+	 * Static resources to simulate resources required in the game.
+	 * Used in calculations to work out the total costs of all the units and their dependencies in the goal.
+	 */
 	private static int totalMineralCost;
 	private static int totalGasCost;
 	private static double totalBuildTime;
@@ -264,20 +271,6 @@ public class Heuristics {
 			}
 		}
 		return (tempSupply + 3 >= timeState.getFutureMaxSupply());
-	}
-	
-	public static boolean worthToBuild(String buildingName, String unitName, TimeState timeState) {
-		double totalTime = 0;
-		double futureTime = 0;
-		double totalMinCost = 0;
-		double totalGasCost = 0;
-		int numberOfUnitsNeeded = timeState.getGoal().get(unitName)-timeState.getTotalNumber(unitName);
-		totalTime = numberOfUnitsNeeded*Datasheet.getBuildTime(unitName);
-		totalMinCost = numberOfUnitsNeeded*Datasheet.getMineralCost(unitName);
-		totalGasCost = numberOfUnitsNeeded*Datasheet.getGasCost(unitName);
-		
-		futureTime = ((totalMinCost/timeState.getMineralIncome())+(totalGasCost/timeState.getGasIncome()))/(1.0*timeState.getTotalNumber(buildingName));
-		return futureTime > totalTime;
 	}
 
 }
