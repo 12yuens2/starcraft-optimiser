@@ -8,6 +8,8 @@ import javax.swing.JLabel;
 import javax.swing.JTextPane;
 import javax.swing.SwingUtilities;
 
+import utils.Timer;
+
 /**
  * Thread that controls the simulation.
  */
@@ -31,10 +33,12 @@ public class GameThread extends Thread {
 	public void run(){
 		while (keepRunning){
 			simulation = new TimeState(targetOutput,goal);
+
+			Timer.start("Playing game");
 			while (simulation != null && !simulation.isFinished() && simulation.getTime() < TimeState.maxTime){
 					simulation = simulation.next();
 			}
-
+			Timer.stop();
 			//Update GUI on the AWT thread.
 			SwingUtilities.invokeLater(new Runnable() {
 				public void run(){

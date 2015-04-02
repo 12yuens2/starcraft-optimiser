@@ -6,6 +6,7 @@ import java.awt.Dimension;
 
 import javax.swing.JFrame;
 
+import utils.Timer;
 import data.Datasheet;
 
 /**
@@ -33,6 +34,7 @@ public class SCWindow extends JFrame {
 	}
 	
 	public static void main(String[] args) {
+		Timer.isLogging = true;
 		Datasheet.init();
 		new SCWindow();
 	}

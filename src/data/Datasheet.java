@@ -88,30 +88,30 @@ public class Datasheet {
 		warpgateCooldown.put("Dark Templar", 45.0);
 		
 		//Upgrades
-		unitData.add(new UnitData("Warp Gate", null, "Cybernetics Core", 50, 50, 0, 160));
-		unitData.add(new UnitData("Ground Weapons 1", null, "Forge", 100, 100, 0, 160));
+		unitData.add(new UnitData("Warp Gate", "Cybernetics Core", "Cybernetics Core", 50, 50, 0, 160));
+		unitData.add(new UnitData("Ground Weapons 1", "Forge", "Forge", 100, 100, 0, 160));
 		unitData.add(new UnitData("Ground Weapons 2", "Ground Weapons 1", "Forge", 150, 150, 0, 190));
 		unitData.add(new UnitData("Ground Weapons 3", "Ground Weapons 2", "Forge", 200, 200, 0, 220));
-		unitData.add(new UnitData("Ground Armor 1", null, "Forge", 100, 100, 0, 160));
+		unitData.add(new UnitData("Ground Armor 1", "Forge", "Forge", 100, 100, 0, 160));
 		unitData.add(new UnitData("Ground Armor 2", "Ground Armor 1", "Forge", 150, 150, 0, 190));
 		unitData.add(new UnitData("Ground Armor 3", "Ground Armor 2", "Forge", 200, 200, 0, 220));
-		unitData.add(new UnitData("Shields 1", null, "Forge", 150, 150, 0, 160));
+		unitData.add(new UnitData("Shields 1", "Forge", "Forge", 150, 150, 0, 160));
 		unitData.add(new UnitData("Shields 2", "Shields 1", "Forge", 225, 225, 0, 190));
 		unitData.add(new UnitData("Shields 3","Shields 2", "Forge", 300, 300, 0, 220));
-		unitData.add(new UnitData("Air Weapons 1", null, "Cybernetics Core", 100, 100, 0, 160));
+		unitData.add(new UnitData("Air Weapons 1", "Cybernetics Core", "Cybernetics Core", 100, 100, 0, 160));
 		unitData.add(new UnitData("Air Weapons 2", "Air Weapons 1", "Cybernetics Core", 175, 175, 0, 190));
 		unitData.add(new UnitData("Air Weapons 3", "Air Weapons 2", "Cybernetics Core", 250, 250, 0, 220));
-		unitData.add(new UnitData("Air Armor 1", null, "Cybernetics Core", 150, 150, 0, 160));
+		unitData.add(new UnitData("Air Armor 1", "Cybernetics Core", "Cybernetics Core", 150, 150, 0, 160));
 		unitData.add(new UnitData("Air Armor 2", "Air Armor 1", "Cybernetics Core", 225, 225, 0, 190));
 		unitData.add(new UnitData("Air Armor 3", "Air Armor 2", "Cybernetics Core", 300, 300, 0, 220));
-		unitData.add(new UnitData("Charge", null, "Twilight Council", 200, 200, 0, 140));
-		unitData.add(new UnitData("Gravitic Boosters", null, "Robotics Bay", 100, 100, 0, 80));
-		unitData.add(new UnitData("Gravitic Drive", null,"Robotics Bay", 100, 100, 0, 80));
-		unitData.add(new UnitData("Anion Pulse-Crystal", null,"Fleet Beacon", 150, 150, 0, 90));
-		unitData.add(new UnitData("Extended Thermal Lance", null, "Robotics Bay", 200, 200, 0, 140));
-		unitData.add(new UnitData("Psionic Storm", null,"Templar Archives", 200, 200, 0, 110));
-		unitData.add(new UnitData("Blink", null,"Twilight Council", 150, 150, 0, 170));
-		unitData.add(new UnitData("Graviton Catapult", null,"Fleet Beacon", 150, 150, 0, 80));
+		unitData.add(new UnitData("Charge", "Twilight Council", "Twilight Council", 200, 200, 0, 140));
+		unitData.add(new UnitData("Blink", "Twilight Council","Twilight Council", 150, 150, 0, 170));
+		unitData.add(new UnitData("Gravitic Boosters", "Robotics Bay", "Robotics Bay", 100, 100, 0, 80));
+		unitData.add(new UnitData("Gravitic Drive", "Robotics Bay","Robotics Bay", 100, 100, 0, 80));
+		unitData.add(new UnitData("Extended Thermal Lance", "Robotics Bay", "Robotics Bay", 200, 200, 0, 140));
+		unitData.add(new UnitData("Psionic Storm", "Templar Archives", "Templar Archives", 200, 200, 0, 110));
+		unitData.add(new UnitData("Graviton Catapult", "Fleet Beacon","Fleet Beacon", 150, 150, 0, 80));
+		unitData.add(new UnitData("Anion Pulse-Crystal", "Fleet Beacon","Fleet Beacon", 150, 150, 0, 90));
 		
 	}
 	

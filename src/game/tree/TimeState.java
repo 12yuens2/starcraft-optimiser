@@ -11,6 +11,7 @@ import java.util.Random;
 
 import javax.swing.JTextPane;
 
+import utils.Timer;
 import data.Datasheet;
 import data.UnitData;
 
@@ -49,6 +50,7 @@ public class TimeState {
 	private boolean goalComplete;
 
 	public TimeState next(){
+		
 		if (time > maxTime){
 			return null;
 		}
@@ -56,16 +58,9 @@ public class TimeState {
 		ArrayList<Operation> possibleOperations = getPossibleOperations();
 		Random generator = new Random();
 		
-		this.indexToWalk = generator.nextInt(possibleOperations.size());
+		int index = generator.nextInt(possibleOperations.size());
 		
-		for (int i = 0; i < possibleOperations.size(); i++){
-			if (i == indexToWalk) {
-				return new TimeState(this, possibleOperations.get(i));				
-			}
-		}
-		
-		
-		return new TimeState(this, possibleOperations.get(0));
+		return new TimeState(this, possibleOperations.get(index));
 	}
 	
 	//initial conditions
@@ -135,6 +130,7 @@ public class TimeState {
 		for (Entry<String,Integer> unitGoal : goal.entrySet()){
 			if (unitGoal.getValue() != unitNumbers.get(unitGoal.getKey())){
 				goalComplete = false;
+				break;
 			}
 		}
 		
@@ -154,7 +150,7 @@ public class TimeState {
 			TimeState.maxTime = time - 1;
 		}
 	}
-		
+
 	private ArrayList<Operation> getPossibleOperations() {
 		ArrayList<Operation> ops = new ArrayList<>();
 		
@@ -188,8 +184,8 @@ public class TimeState {
 			if (energy >= Datasheet.CHRONOBOOST_COST){
 				for (Entry<String,BuildOrders> entry : buildQueues.entrySet()){
 					for (Build build : entry.getValue()){
-						if ((UnitIs.Unit(build.nameOfUnit) && !build.isChronoboosted
-								&& UnitIs.Building(Datasheet.getBuiltFrom(build.nameOfUnit))) || UnitIs.Upgrade(build.nameOfUnit)){
+						if ((UnitIs.Unit(build.nameOfUnit) && UnitIs.Building(Datasheet.getBuiltFrom(build.nameOfUnit)) || (UnitIs.Upgrade(build.nameOfUnit))) 
+								&& !build.isChronoboosted){
 							if (build instanceof WarpgateBuild){
 								if (((WarpgateBuild)build).hasProducedUnit){
 									ops.add(new Operation("chronoboost", build.nameOfUnit));
@@ -220,7 +216,7 @@ public class TimeState {
 				}
 				
 				if (UnitIs.Probe(unitName)){
-					if (Heuristics.moreProbes(this)){
+					if (Heuristics.moreProbes(this) || goal.containsKey(unitName)){
 						for (int i = 0; i <= unitNumbers.get("Nexus");i++){
 							ops.add(new Operation("build", unitName));
 							ops.add(new Operation("build", unitName));
@@ -266,7 +262,7 @@ public class TimeState {
 						} else {
 							ops.add(new Operation("build", unitName));	
 						}
-					}		
+					}
 				}
 				
 				if (UnitIs.HighTemplar(unitName)){
@@ -430,6 +426,7 @@ public class TimeState {
 			addToSupply(op.getNoun());
 			break;
 		}
+		
 	}
 	
 	public HashMap<String, Integer> getGoal() {
