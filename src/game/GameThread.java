@@ -8,6 +8,7 @@ import javax.swing.JLabel;
 import javax.swing.JTextPane;
 import javax.swing.SwingUtilities;
 
+import data.UnitNumbers;
 import utils.Timer;
 
 /**
@@ -16,13 +17,13 @@ import utils.Timer;
 public class GameThread extends Thread {
 
 	JTextPane targetOutput;
-	HashMap<String, Integer> goal;
+	UnitNumbers goal;
 	boolean keepRunning;
 	int searchedGames;
 	JLabel counter;
 	TimeState simulation;
 	
-	public GameThread(JTextPane targetOutput,JLabel counter, HashMap<String, Integer> goal){
+	public GameThread(JTextPane targetOutput,JLabel counter, UnitNumbers goal){
 		this.targetOutput = targetOutput;
 		this.goal = goal;
 		this.keepRunning = true;
@@ -34,8 +35,8 @@ public class GameThread extends Thread {
 		while (keepRunning){
 			simulation = new TimeState(targetOutput,goal);
 
-			Timer.start("Playing game");
-			while (simulation != null && !simulation.isFinished() && simulation.getTime() < TimeState.maxTime){
+			Timer.start("Playing single game");
+			while (simulation != null && !simulation.isFinished() && simulation.getTime() < TimeState.getMaxTime()){
 					simulation = simulation.next();
 			}
 			Timer.stop();
@@ -50,7 +51,7 @@ public class GameThread extends Thread {
 	
 	public void start(){
 		//Reset the max time for the build.
-		TimeState.maxTime = 2000;
+		TimeState.setMaxTime(2000);
 		super.start();
 	}
 

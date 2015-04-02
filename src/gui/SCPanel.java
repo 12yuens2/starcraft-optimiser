@@ -19,7 +19,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextPane;
 
 import data.Datasheet;
-import data.Goal;
+import data.UnitNumbers;
 import data.UnitData;
 
 /**
@@ -139,7 +139,7 @@ public class SCPanel extends JPanel {
 	 */
 	public void start(){
 		this.isStarted = true;
-		Goal goal = new Goal();
+		UnitNumbers goal = new UnitNumbers();
 		for (GoalPanel panel : goalPanels){
 			String name = panel.getUnitName();
 			int number = panel.getNumber();

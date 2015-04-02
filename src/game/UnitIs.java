@@ -32,6 +32,14 @@ public class UnitIs {
 		return unitName.equals("High Templar");
 	}
 	
+	public static boolean Interceptor(String unitName) {
+		return unitName.equals("Interceptor");
+	}
+	
+	public static boolean Carrier(String unitName) {
+		return unitName.equals("Carrier");
+	}
+	
 	public static boolean Warpgate(String unitName) {
 		return unitName.equals("Warp Gate");
 	}

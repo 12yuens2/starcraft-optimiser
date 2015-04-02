@@ -131,11 +131,10 @@ public class Heuristics {
 		double excessGas = timeState.getGasIncome() - timeState.getGasSpending();
 
 		for (Entry<String,Integer> entry : timeState.getGoal().entrySet()){
-
-			double mineralRateCost = Datasheet.getMineralCost(entry.getKey())/(1.0*Datasheet.getBuildTime(entry.getKey()));
-			double gasRateCost = Datasheet.getGasCost(entry.getKey())/(1.0*Datasheet.getBuildTime(entry.getKey()));
-
 			if (Datasheet.getBuiltFrom(entry.getKey()).equals(name)){
+				double mineralRateCost = Datasheet.getMineralCost(entry.getKey())/(1.0*Datasheet.getBuildTime(entry.getKey()));
+				double gasRateCost = Datasheet.getGasCost(entry.getKey())/(1.0*Datasheet.getBuildTime(entry.getKey()));
+				
 				if (excessMinerals >= mineralRateCost && excessGas  >= gasRateCost){
 					return true;
 				}
@@ -264,7 +263,7 @@ public class Heuristics {
 				tempSupply += Datasheet.getSupplyCost(entry.getKey());
 			}
 		}
-		return (tempSupply + 1 >= timeState.getFutureMaxSupply());
+		return (tempSupply + 3 >= timeState.getFutureMaxSupply());
 	}
 	
 	public static boolean worthToBuild(String buildingName, String unitName, TimeState timeState) {

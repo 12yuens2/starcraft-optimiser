@@ -5,7 +5,8 @@ import java.util.Iterator;
 
 /**
  * The collection of build orders for a specific type
- * of builder.
+ * of builder. The size of buildOrders must be smaller than the number
+ * of builders.
  */
 public class BuildOrders extends ArrayList<Build> {
 	

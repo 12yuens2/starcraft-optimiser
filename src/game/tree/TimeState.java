@@ -13,42 +13,79 @@ import javax.swing.JTextPane;
 
 import utils.Timer;
 import data.Datasheet;
+import data.UnitNumbers;
 import data.UnitData;
 
+/**
+ * TimeState represents the simulation of the game. It simulates the game according
+ * to a given goal, returning the next TimeState.
+ */
 public class TimeState {
 	ArrayList<TimeState> futureStates;
 	
-	int indexToWalk;
-
-	private HashMap<String,Integer> goal;
-	HashMap<String,Integer> unitNumbers;
+	/**
+	 * @see UnitNumbers
+	 */
+	private UnitNumbers goal;
+	private UnitNumbers unitNumbers;
 	
+	/**
+	 * The list with all of the energy of the nexi. Stored as individual doubles,
+	 * as the energy pool of nexi is not shared.
+	 */
 	ArrayList<Double> nexusEnergy;
 	
-	int probesOnGas;
+	/**
+	 * Instead of differentiating between probes, we use an integer to specify
+	 * how many probes are  mining gas. From there we can calculate everything else.
+	 */
+	private int probesOnGas;
 	
-	double totalMinerals;
-	double totalGas;
-	double minerals;
-	double gas;
-	int supply;
-	int maxSupply;
+	private double totalMinerals;
+	private double totalGas;
+	private double minerals;
+	private double gas;
+	private int supply;
+	private int maxSupply;
 
+	/**
+	 * The final output of the simulation.
+	 */
+	private StringBuilder buildOrder;
 	
-	StringBuilder buildOrder;
-	int time;
-	public static int maxTime;
+	private int time;
 	
-	HashMap<String,BuildOrders> buildQueues;
+	/**
+	 * The maximum time the simulation should run for.
+	 * This changes to become the smallest time for which the goal is achieved.
+	 */
+	private static int maxTime;
 	
-	ArrayList<Integer> gatewayTransformations;
-	int numberOfWarpgates;
-	int numberOfTemplar;
+	/**
+	 * The build queues for each builder type.
+	 * @see BuildOrders
+	 */
+	private HashMap<String,BuildOrders> buildQueues;
 	
-	JTextPane output;
+	/**
+	 * The list of active warp gate transformations.
+	 */
+	private ArrayList<Integer> gatewayTransformations;
+	
+	/**
+	 * The number of gateways which are warp gates. This is used since we don't
+	 * keep track of warp gates in unitNumbers.
+	 */
+	private int numberOfWarpgates;
+	private int numberOfTemplar;
+	
+	private JTextPane output;
 
 	private boolean goalComplete;
 
+	/**
+	 * @return The simulation at the next second of game time. Returns null if goal is achieved.
+	 */
 	public TimeState next(){
 		
 		if (time > maxTime){
@@ -63,14 +100,18 @@ public class TimeState {
 		return new TimeState(this, possibleOperations.get(index));
 	}
 	
-	//initial conditions
-	public TimeState(JTextPane output, HashMap<String,Integer> goal){
+	/**
+	 * The initial TimeState of the game. 
+	 * @param output the component to output the build order to.
+	 * @param goal the goal to achieve.
+	 */
+	public TimeState(JTextPane output, UnitNumbers goal){
 		this.goal = goal;
 		this.output = output;
 		
 		futureStates = new ArrayList<TimeState>();
 		
-		unitNumbers = new HashMap<>();
+		unitNumbers = new UnitNumbers();
 		buildQueues = new HashMap<>();
 		gatewayTransformations = new ArrayList<>();
 		numberOfWarpgates = 0;
@@ -97,8 +138,15 @@ public class TimeState {
 		this.buildOrder = new StringBuilder();
 	}
 	
-	//branch
-	public TimeState(TimeState parent,Operation operation){
+	/**
+	 * The simulation from a parent TimeState. Adds one second of game time.
+	 * @param parent the parent TimeState.
+	 * @param operation the Operation to perform on that second.
+	 * @see Operation
+	 */
+	private TimeState(TimeState parent,Operation operation){
+		
+		//Take information from parent.
 		this.time = parent.time + 1;
 		this.totalMinerals = parent.totalMinerals;
 		this.totalGas = parent.totalGas;
@@ -109,15 +157,11 @@ public class TimeState {
 		this.probesOnGas = parent.probesOnGas;
 		this.goalComplete = parent.goalComplete;
 		this.buildOrder = parent.buildOrder;
-		
 		this.nexusEnergy = parent.nexusEnergy;
-		
 		this.output = parent.output;
-		
 		this.gatewayTransformations = parent.gatewayTransformations;
 		this.numberOfWarpgates = parent.numberOfWarpgates;
 		this.numberOfTemplar = parent.numberOfTemplar;	
-		
 		this.unitNumbers = parent.unitNumbers;
 		this.buildQueues = parent.buildQueues;
 		this.nexusEnergy = parent.nexusEnergy;
@@ -147,26 +191,34 @@ public class TimeState {
 			if (output != null){
 				output.setText(this.buildOrder.toString());				
 			}
+			
+			/**
+			 * Since a solution has been found, the next solution should be faster.
+			 */
 			TimeState.maxTime = time - 1;
 		}
 	}
-
+	
+	/**
+	 * Uses the current game state to see what operations can be performed.
+	 * @return the list of possible Operations.
+	 */
 	private ArrayList<Operation> getPossibleOperations() {
 		ArrayList<Operation> ops = new ArrayList<>();
 		
-		//do nothing
+		//Do nothing
 		ops.add(new Operation("wait", ""));
 		
-		//assigning workers
+		//Assign workers to minerals and gas
 		if (Heuristics.needMoreGas(this) && probesOnGas < unitNumbers.get("Assimilator")*3 && Heuristics.getGas(this)) {
 			ops.add(new Operation("assign", "gas"));
 		} else if (probesOnGas > 0){
 			ops.add(new Operation("assign", "minerals"));
 		}
 		
-		//if warp gate is researched, change gateways into warp gates
+		//Change gateways into warp gates if they are idle
 		if (numberOfWarpgates < unitNumbers.get("Gateway") && unitNumbers.get("Warp Gate") == 1) {
-			//if gateway is not building anything
+			
 			int gatewaysBuilding = 0;
 
 			for (Build gatewayBuild : buildQueues.get("Gateway")){
@@ -175,7 +227,9 @@ public class TimeState {
 				}
 			}
 			if (gatewaysBuilding < (unitNumbers.get("Gateway") - numberOfWarpgates - gatewayTransformations.size() ) ){
-				ops.add(new Operation("convert", "Gateway"));				
+				for (int i=0; i<20; i++) {
+					ops.add(new Operation("convert", "Gateway"));		
+				}
 			}
 		}
 		
@@ -201,7 +255,7 @@ public class TimeState {
 			}
 		}
 		
-		//Building units and buildings
+		//Build units and buildings
 		for (UnitData data : Datasheet.unitData){
 			String unitName = data.getName();
 			
@@ -259,9 +313,19 @@ public class TimeState {
 							if (numberOfTemplar >= 2){
 								ops.add(new Operation("build", unitName));
 							}
+						} else if (UnitIs.Interceptor(unitName)){
+							if (unitNumbers.get("Carrier")*8 > unitNumbers.get("Interceptor")){
+								ops.add(new Operation("build", unitName));
+							}
 						} else {
 							ops.add(new Operation("build", unitName));	
 						}
+					}
+				}
+				
+				if (UnitIs.Carrier(unitName) && goal.containsKey("Interceptor")){
+					if (goal.get("Interceptor") > getTotalNumber("Carrier")*8){
+						ops.add(new Operation("build", unitName));
 					}
 				}
 				
@@ -275,13 +339,12 @@ public class TimeState {
 
 				if (UnitIs.Builder(unitName)){
 					if (Heuristics.needsMoreFromBuilder(unitName, this) && Heuristics.canSupportFromBuilder(unitName, this)){
-						// checking for support
-						ops.add(new Operation("build", unitName));						
+						ops.add(new Operation("build", unitName));
 					}
 				}
 				if (UnitIs.Dependancy(unitName)){
 					if (Heuristics.needsDependancy(unitName, this)){
-						ops.add(new Operation("build", unitName));												
+						ops.add(new Operation("build", unitName));
 					}
 				}
 				
@@ -296,7 +359,6 @@ public class TimeState {
 						goal.put("Warp Gate", 1);
 					}
 				}
-				//nexus for expansion
 
 			}
 		}
@@ -304,13 +366,19 @@ public class TimeState {
 		return ops;
 	}
 	
-	private void executeOperation(Operation op) {
-		//pass time first
+	/**
+	 * Pass time in the simulation and execute the given Operation.
+	 * @param operation the Operation to be executed.
+	 */
+	private void executeOperation(Operation operation) {
+		//Pass time
+		
 		addResources();
 
+		//Increment nexus energies.
 		for (int i = 0; i < nexusEnergy.size(); i++){
 			if (nexusEnergy.get(i) >= Datasheet.MAX_ENERGY_IN_NEXUS) {
-				//do nothing as energy reached cap in nexus
+				//do nothing as energy reached the maximum in the nexus.
 			} else {
 				nexusEnergy.set(i, nexusEnergy.get(i) + 1);
 			}
@@ -320,6 +388,7 @@ public class TimeState {
 			gatewayTransformations.set(i, gatewayTransformations.get(i) + 1);
 		}
 		
+		//Increment gateway transformations.
 		for (Iterator<Integer> iterator = gatewayTransformations.iterator(); iterator.hasNext();){
 			Integer i = iterator.next();
 			if (i >= Datasheet.WARPGATE_TRANFORMATION_TIME){
@@ -341,6 +410,8 @@ public class TimeState {
 						this.totalGas += Datasheet.GAS_PER_NEXUS;
 					} else if (unit.equals("Dark Templar") || unit.equals("High Templar")) {
 						this.numberOfTemplar++;
+					} else if (unit.equals("Carrier")){
+						unitNumbers.replace("Interceptor", unitNumbers.get("Interceptor") + 4);
 					}
 					addToMaxSupply(unit);
 				}
@@ -348,14 +419,14 @@ public class TimeState {
 			buildOrder.removeCompleted();
 		}
 
-		//check everything on the server side.
-		switch (op.getVerb()){
+		switch (operation.getVerb()){
 		case "wait":
 			//wait...
 			break;
 		case "build":
-			if (op.getNoun().equals("Archon") && Heuristics.enoughTemplarToMakeArchon(this)) {
-				buildOrder.append(getTimeStamp() + " " + op.getNoun() + " " + supply + "/" + maxSupply + "\n");
+			//Morphing Archons
+			if (operation.getNoun().equals("Archon") && Heuristics.enoughTemplarToMakeArchon(this)) {
+				buildOrder.append(getTimeStamp() + " " + operation.getNoun() + " " + supply + "/" + maxSupply + "\n");
 				
 				int sacrificedTemplar = 0;
 				while (sacrificedTemplar < 2){
@@ -372,19 +443,20 @@ public class TimeState {
 
 			}
 			
+			//Building units
 			for (UnitData data : Datasheet.unitData) {
-
-				if (op.getNoun().equals(data.getName())){
+				if (operation.getNoun().equals(data.getName())){
 					buildOrder.append(getTimeStamp() + " " + data.getName() + " " + supply + "/" + maxSupply + "\n");
-					this.minerals -= Datasheet.getMineralCost(op.getNoun());
-					this.gas -= Datasheet.getGasCost(op.getNoun());
-					this.buildQueues.get(Datasheet.getBuiltFrom(op.getNoun())).add(new Build(op.getNoun()));
-					addToSupply(op.getNoun());
+					this.minerals -= Datasheet.getMineralCost(operation.getNoun());
+					this.gas -= Datasheet.getGasCost(operation.getNoun());
+					this.buildQueues.get(Datasheet.getBuiltFrom(operation.getNoun())).add(new Build(operation.getNoun()));
+					addToSupply(operation.getNoun());
+					break;
 				}
 			}
 			break;
 		case "assign":
-			switch (op.getNoun()) {
+			switch (operation.getNoun()) {
 			case "minerals":
 				probesOnGas--;
 				break;
@@ -396,7 +468,7 @@ public class TimeState {
 		case "chronoboost":
 			for (Entry<String,BuildOrders> buildQueue : buildQueues.entrySet()){
 				for (Build build : buildQueue.getValue()){
-					if (build.nameOfUnit.equals(op.getNoun()) && build.buildTime - build.time > Datasheet.CHRONOBOST_MIN_TIME 
+					if (build.nameOfUnit.equals(operation.getNoun()) && build.buildTime - build.time > Datasheet.CHRONOBOST_MIN_TIME 
 							&& !build.isChronoboosted){
 						build.chronoboost();
 						break;
@@ -409,21 +481,21 @@ public class TimeState {
 					break;
 				}
 			}
-			buildOrder.append(getTimeStamp() + " Chronoboost " + Datasheet.getBuiltFrom(op.getNoun()) + " " + supply + "/" + maxSupply + "\n");
+			buildOrder.append(getTimeStamp() + " Chronoboost " + Datasheet.getBuiltFrom(operation.getNoun()) + " " + supply + "/" + maxSupply + "\n");
 			break;
 		case "convert":
-			if (op.getNoun().equals("Gateway")){
-				buildOrder.append(getTimeStamp() + " Converting Gateway into Warp Gate " + supply + "/" + maxSupply + "\n");
+			if (operation.getNoun().equals("Gateway")){
+				buildOrder.append(getTimeStamp() + " Convert Gateway into Warp Gate " + supply + "/" + maxSupply + "\n");
 				gatewayTransformations.add(new Integer(0));
 			}
 			break;
 		case "warp":
-			buildOrder.append(getTimeStamp() + " Warp in " + op.getNoun() + " " + supply + "/" + maxSupply + "\n");
-			this.minerals -= Datasheet.getMineralCost(op.getNoun());
-			this.gas -= Datasheet.getGasCost(op.getNoun());
-			this.buildQueues.get("Gateway").add(new WarpgateBuild(op.getNoun()));
+			buildOrder.append(getTimeStamp() + " Warp in " + operation.getNoun() + " " + supply + "/" + maxSupply + "\n");
+			this.minerals -= Datasheet.getMineralCost(operation.getNoun());
+			this.gas -= Datasheet.getGasCost(operation.getNoun());
+			this.buildQueues.get("Gateway").add(new WarpgateBuild(operation.getNoun()));
 			
-			addToSupply(op.getNoun());
+			addToSupply(operation.getNoun());
 			break;
 		}
 		
@@ -625,5 +697,12 @@ public class TimeState {
 		return goalComplete;
 	}
 		
+	public synchronized static void setMaxTime(int time){
+		TimeState.maxTime = time;
+	}
+
+	public synchronized static int getMaxTime() {
+		return TimeState.maxTime;
+	}
 }
 

@@ -7,7 +7,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Map.Entry;
 
-import data.Goal;
+import data.UnitNumbers;
 
 /**
  * Action Listener for Menu Items to add goals listed in the specification.
@@ -15,9 +15,9 @@ import data.Goal;
 public class MenuGoalListener implements ActionListener {
 
 	SCPanel panel;
-	Goal goal;
+	UnitNumbers goal;
 	
-	public MenuGoalListener(SCPanel panel,Goal goal ) {
+	public MenuGoalListener(SCPanel panel,UnitNumbers goal ) {
 		this.panel = panel;
 		this.goal = goal;
 	}
