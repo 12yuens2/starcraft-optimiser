@@ -155,7 +155,7 @@ public class Heuristics {
 		return (darkTemplars + highTemplars >=2);
 	}
 	
-	public static boolean shouldGetWarpgate(TimeState timeState) {
+	public static boolean worthWarpgate(TimeState timeState) {
 		double totalBuildTimeGateway = 0;
 		double totalBuildTimeWarpgate = Datasheet.WARPGATE_TRANFORMATION_TIME*timeState.getTotalNumber("Gateway");
 		for (Entry<String, Integer> entry: timeState.getGoal().entrySet()) {

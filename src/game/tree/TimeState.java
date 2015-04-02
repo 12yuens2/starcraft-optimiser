@@ -296,7 +296,7 @@ public class TimeState {
 				}
 				
 				if (UnitIs.Warpgate(unitName)) {
-					if (!goal.containsKey(unitName) && Heuristics.shouldGetWarpgate(this)) {
+					if (!goal.containsKey(unitName) && Heuristics.worthWarpgate(this)) {
 						goal.put("Warp Gate", 1);
 					}
 				}
