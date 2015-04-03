@@ -31,12 +31,5 @@ public class SCWindow extends JFrame {
 		setVisible(true);
 		setPreferredSize(new Dimension(1200,800));
 		pack();
-	}
-	
-	public static void main(String[] args) {
-		Timer.isLogging = true;
-		Datasheet.init();
-		new SCWindow();
-	}
-	
+	}	
 }

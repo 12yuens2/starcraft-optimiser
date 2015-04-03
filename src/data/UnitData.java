@@ -5,6 +5,8 @@ package data;
  */
 public class UnitData {
 	String name;
+	
+	//if there is no dependency then the dependency is defaulted to the builtFrom unit
 	String dependancy;
 	String builtFrom;
 	double mineralCost;

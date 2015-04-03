@@ -15,7 +15,11 @@ public class Datasheet {
 	public static final double MINS_PER_NEXUS = 9000, GAS_PER_NEXUS = 5000;
 	public static final double MAX_ENERGY_IN_NEXUS = 100;
 	
-	public static final int MAX_PROBES_PER_NEXUS = 24;
+	public static final int MAX_PROBES_ON_MINS = 24;
+	public static final int MAX_PROBES_PER_GAS = 3;
+	public static final int GEYSERS_PER_NEXUS = 2;
+	public static final int MAX_PROBES_PER_NEXUS = MAX_PROBES_ON_MINS + MAX_PROBES_PER_GAS*GEYSERS_PER_NEXUS;
+	
 	public static final int EFFICIENT_PROBES = 16;
 	
 	public static final double MINS_PER_MINUTE = 41, THIRD_MINS_PER_MINUTE = 20;

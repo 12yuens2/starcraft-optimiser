@@ -40,6 +40,9 @@ public class TimeState {
 	 */
 	private int probesOnGas;
 	
+	/**
+	 * Total resources for resource depletion, normal resources are the ones in the bank.
+	 */
 	private double totalMinerals;
 	private double totalGas;
 	private double minerals;
@@ -123,6 +126,7 @@ public class TimeState {
 			buildQueues.put(data.getName(), new BuildOrders());
 		}
 		
+		//starting conditions of a game
 		unitNumbers.replace("Nexus", 1);
 		unitNumbers.replace("Probe", 6);
 		
@@ -209,7 +213,7 @@ public class TimeState {
 		ops.add(new Operation("wait", ""));
 		
 		//Assign workers to minerals and gas
-		if (Heuristics.needMoreGas(this) && probesOnGas < unitNumbers.get("Assimilator")*3 && Heuristics.getGas(this)) {
+		if (Heuristics.needMoreGas(this) && probesOnGas < unitNumbers.get("Assimilator")*Datasheet.MAX_PROBES_PER_GAS && Heuristics.getGas(this)) {
 			ops.add(new Operation("assign", "gas"));
 		} else if (probesOnGas > 0){
 			ops.add(new Operation("assign", "minerals"));
@@ -269,11 +273,10 @@ public class TimeState {
 				}
 				
 				if (UnitIs.Probe(unitName)){
-					if (Heuristics.moreProbes(this) || goal.containsKey(unitName)){
+					if (Heuristics.moreProbes(this) || goal.containsKey(unitName) 
+							&& getTotalNumber(unitName) < getTotalNumber("Nexus")*(Datasheet.MAX_PROBES_PER_NEXUS)){
 						for (int i = 0; i <= unitNumbers.get("Nexus");i++){
-							ops.add(new Operation("build", unitName));
-							ops.add(new Operation("build", unitName));
-							ops.add(new Operation("build", unitName));							
+							ops.add(new Operation("build", unitName));						
 						}
 					}
 				}
@@ -512,6 +515,9 @@ public class TimeState {
 		int supply = 0;
 		for (Entry<String, Integer> entry : goal.entrySet()) {
 			supply+=Datasheet.getSupplyCost(entry.getKey())*entry.getValue();
+			if (UnitIs.Archon(entry.getKey())) {
+				supply+=Datasheet.getSupplyCost(entry.getKey())*entry.getValue();
+			}
 		}
 		return supply;
 	}
@@ -524,7 +530,7 @@ public class TimeState {
 		double income = 0;
 		
 		int numberOfProbes = probes - this.probesOnGas;
-		numberOfProbes = Math.min(numberOfProbes, numberOfNexi*Datasheet.MAX_PROBES_PER_NEXUS);
+		numberOfProbes = Math.min(numberOfProbes, numberOfNexi*Datasheet.MAX_PROBES_ON_MINS);
 				
 		int efficientProbeBunches = numberOfProbes/Datasheet.EFFICIENT_PROBES;
 		int remainder = numberOfProbes%Datasheet.EFFICIENT_PROBES;
@@ -554,13 +560,11 @@ public class TimeState {
 		int spending = 0;
 		for (Entry<String, BuildOrders> buildQueue : buildQueues.entrySet()){
 			for (Build build : buildQueue.getValue()){
-				if (UnitIs.Unit(build.nameOfUnit)){
 					double unitCostRate = Datasheet.getMineralCost(build.nameOfUnit)/Datasheet.getBuildTime(build.nameOfUnit);
 					if (build.isChronoboosted){
 						unitCostRate *= 1.5;
 					}
 					spending += unitCostRate;
-				}
 			}
 		}
 		return spending;
@@ -619,7 +623,7 @@ public class TimeState {
 	}
 	
 	private boolean hasFreeGeysers() {
-		return (unitNumbers.get("Nexus")*2 > getTotalNumber("Assimilator"));
+		return (unitNumbers.get("Nexus")*Datasheet.GEYSERS_PER_NEXUS > getTotalNumber("Assimilator"));
 	}
 	
 	private void addToMaxSupply(String nameOfUnit) {

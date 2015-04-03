@@ -7,8 +7,6 @@ import java.util.NoSuchElementException;
 /**
  * Utility class included for testing and optimisation.
  * Implements a FILO structure.
- * @author 140 000 346
- *
  */
 public class Timer {
 	private static LinkedList<Date> now = new LinkedList<>();
